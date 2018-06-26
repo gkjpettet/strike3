@@ -1,9 +1,73 @@
 #tag Module
 Protected Module Strike3
+	#tag Method, Flags = &h21
+		Private Sub AddPostToDatabase(p as Strike3.Post)
+		  ' Adds the passed Post to the site's database.
+		  
+		  using Xojo.Data
+		  
+		  dim dRecord as DatabaseRecord
+		  dim postID, tagID as Integer
+		  dim rs as RecordSet
+		  dim tagName as String
+		  
+		  dRecord = new DatabaseRecord
+		  dRecord.Column("contents") = p.contents
+		  dRecord.Column("data") = GenerateJSON(p.data)
+		  
+		  dRecord.IntegerColumn("date") = p.date.UnixTime
+		  dRecord.IntegerColumn("date_year") = p.date.Year
+		  dRecord.IntegerColumn("date_month") = p.date.Month
+		  dRecord.IntegerColumn("date_day") = p.date.Day
+		  
+		  dRecord.BooleanColumn("draft") = p.draft
+		  dRecord.Column("hash") = p.hash
+		  dRecord.BooleanColumn("homepage") = p.homepage
+		  dRecord.IntegerColumn("last_updated") = Xojo.Core.Date.Now.SecondsFrom1970
+		  dRecord.BooleanColumn("page") = p.page
+		  dRecord.Column("source_path") = p.sourcePath
+		  dRecord.Column("section") = p.section
+		  dRecord.Column("slug") = p.slug
+		  dRecord.Column("title") = p.title
+		  dRecord.Column("url") = p.url
+		  dRecord.BooleanColumn("verified") = True
+		  db.InsertRecord("posts", dRecord)
+		  if db.Error then raise new Error(CurrentMethodName, db.ErrorMessage)
+		  
+		  ' Get the database ID of this post
+		  postID = db.LastRowID
+		  
+		  ' Add tags
+		  for each tagName in p.tags
+		    ' Check if this tag has already been defined. If so, grab it's database ID.
+		    rs = db.SQLSelect("SELECT id FROM tags WHERE name='" + tagName + "';")
+		    if not rs.EOF then
+		      tagID = rs.Field("id").IntegerValue
+		    else
+		      ' This tag has not yet been defined in the database - let's remedy that.
+		      dRecord = new DatabaseRecord
+		      dRecord.Column("name") = tagName
+		      db.InsertRecord("tags", dRecord)
+		      if db.Error then raise new Error(CurrentMethodName, db.ErrorMessage)
+		      tagID = db.LastRowID
+		    end if
+		    ' Now we have the ID of this post and the ID of this tag. Create an entry in the pivot table.
+		    dRecord = new DatabaseRecord
+		    dRecord.IntegerColumn("posts_id") = postID
+		    dRecord.IntegerColumn("tags_id") = tagID
+		    db.InsertRecord("post_tags", dRecord)
+		    if db.Error then raise new Error(CurrentMethodName, db.ErrorMessage)
+		  next tagName
+		  
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h1
 		Protected Sub Build(site as FolderItem)
 		  ' Builds the site.
 		  ' We store the built HTML in root/public.
+		  
+		  dim f as FolderItem
 		  
 		  ' Initialise. This will check for site validity amongst other things.
 		  try
@@ -21,6 +85,24 @@ Protected Module Strike3
 		  
 		  ' Set the theme.
 		  SetTheme()
+		  
+		  ' Publish the 404 page
+		  try
+		    f = theme.Child("layouts").Child("404.html")
+		  catch
+		    raise new Error(CurrentMethodName, "Missing the theme's 404 page.")
+		  end try
+		  if not CopyFileOrFolder(f, publicFolder.Child("404.html")) then
+		    raise new Error(CurrentMethodName, _
+		    "Unable to copy the 404 page from the theme folder to the public folder.")
+		  end if
+		  
+		  ' Set the verified status of every post in the database to False
+		  db.SQLExecute("UPDATE posts SET verified=0;")
+		  
+		  ' Parse the contents folder into the site's database
+		  Parse(root.Child("content"))
+		  
 		End Sub
 	#tag EndMethod
 
@@ -327,6 +409,147 @@ Protected Module Strike3
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Function ExtractFrontMatter(ByRef s as String) As String
+		  ' Pulls out and removes JSON frontmatter from `s` (if present) and returns it as a String.
+		  ' If present, frontmatter must occur at the beginning of s.
+		  ' Frontmatter is in the format:
+		  '  ;;;
+		  '   {Valid JSON}
+		  '  ;;;
+		  ' Note that `s` is passed by reference and so will be altered by this method.
+		  
+		  dim rg as new RegEx
+		  dim match as RegExMatch
+		  dim frontmatter as String
+		  
+		  frontmatter = ""
+		  
+		  try
+		    if s.Trim.Left(3) <> ";;;" then return ""
+		  catch
+		    return ""
+		  end try
+		  
+		  rg.SearchPattern = "^(\;{3}(?:\n|\r)([\w\W]+?)\;{3})"
+		  rg.ReplacementPattern = ""
+		  
+		  match = rg.Search(s)
+		  if match <> Nil then
+		    frontmatter = match.SubExpressionString(0).Replace(";;;", "")
+		    frontmatter = frontmatter.Left(frontmatter.Len - 3).Trim
+		    s = rg.Replace(s).Trim
+		  end if
+		  
+		  ' Support the omission of flanking curly braces
+		  if frontmatter.Left(1) <> "{" and frontmatter.Right(1) <> "}" then
+		    frontmatter = "{" + frontmatter + "}"
+		  end if
+		  
+		  return frontmatter
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function FileExistsInDatabase(file as FolderItem) As Boolean
+		  ' Returns True if this file has already been parsed into the site's database and has not altered
+		  ' since then.
+		  
+		  ' If this file's hash and file path match a row in the database then this file exists and can 
+		  ' be safely skipped.
+		  ' If this file's hash isn't in the database but it's file path is then the user has modified 
+		  ' a file but kept it in the same location in `/content`. The file will need to be removed and rebuilt.
+		  
+		  dim hash as String
+		  dim rs as RecordSet
+		  
+		  ' Get this file's MD5 hash
+		  hash = file.ToMD5
+		  
+		  ' Is there a post in the database with this hash and file path?
+		  rs = db.SQLSelect("SELECT id FROM posts WHERE (hash='" + hash + "') AND (source_path = '" + _
+		  file.ShellPath + "');")
+		  if rs = Nil or rs.EOF then
+		    return False
+		  else
+		    ' File paths and hashes match. We can safely skip this file but first flag that we've verified it
+		    db.SQLExecute("UPDATE posts SET verified=1 WHERE id=" + rs.Field("id").IntegerValue.ToText + ";")
+		    return True
+		  end if
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub FileToDatabase(file as FolderItem)
+		  ' Takes a file and adds it to the site's database if needed.
+		  
+		  Using Xojo.Data
+		  
+		  dim post as new Post(file)
+		  dim tin As TextInputStream
+		  dim frontmatter, md As String
+		  
+		  ' Make sure this is a Markdown file. Otherwise skip it (don't raise an error).
+		  try
+		    if file.Name.Right(3) <> ".md" then return
+		  catch
+		    return
+		  end try
+		  
+		  ' Do we need to add this file to the database or is it already there?
+		  if FileExistsInDatabase(file) then return
+		  
+		  ' Get the contents of this file
+		  try
+		    tin = TextInputStream.Open(file)
+		    md = tin.ReadAll()
+		    tin.Close()
+		  catch
+		    raise new Error(CurrentMethodName, "Unable to read the contents of `" + file.NativePath + "`.")
+		  end try
+		  
+		  ' Extract the frontmatter from this file (if any)
+		  frontmatter = ExtractFrontMatter(md)
+		  post.markdown = md
+		  
+		  ' Parse any frontmatter in the file
+		  ParseFrontmatter(post, frontmatter)
+		  
+		  ' Determine the public url for this post
+		  post.url = URLForFile(file, post.slug)
+		  
+		  ' Determine this post's section
+		  post.section = SectionForPost(post)
+		  
+		  ' Set the path for this post's source file
+		  post.sourcePath = file.ShellPath.ToText
+		  
+		  ' Derive this post's file's MD5 hash
+		  post.hash = file.ToMD5
+		  
+		  ' Set this post's updated date
+		  post.lastUpdated = Xojo.Core.Date.Now
+		  
+		  ' Homepage, page or post?
+		  if file.NativePath = root.Child("content").Child("index.md").NativePath then
+		    post.homepage = True
+		  elseif file.Name = "index.md" then
+		    post.page = True
+		  else
+		    post.page = False
+		  end if
+		  
+		  ' Render the Markdown
+		  post.contents = Markdown.Render(md)
+		  
+		  ' Add this post to the database
+		  AddPostToDatabase(post)
+		  
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Sub Initialise(siteRoot as FolderItem)
 		  ' Assigns an existing site folder to Strike3 and prepares the engine.
 		  
@@ -400,6 +623,113 @@ Protected Module Strike3
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Function NameWithoutMDExtension(Extends f as FolderItem) As String
+		  ' Returns the name of this file without the .md file extension.
+		  
+		  try
+		    if f.Name.Right(3) = ".md" then
+		      return f.Name.Left(f.Name.Len - 3)
+		    else
+		      return f.Name
+		    end if
+		  catch
+		    return f.Name
+		  end try
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub Parse(folder as FolderItem)
+		  ' Traverses this folder and parses it into the site's database.
+		  ' We call it recursively for each folder encountered within /content.
+		  
+		  dim f as FolderItem
+		  dim i, folderCount as Integer
+		  
+		  folderCount = folder.Count
+		  for i = 1 to folderCount
+		    f = folder.TrueItem(i)
+		    
+		    if f.Directory then
+		      Parse(f)
+		    else
+		      if f.Name <> "._DS_STORE" then FileToDatabase(f) ' Skip those pesky macOS files.
+		    end if
+		  next i
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub ParseFrontmatter(post as Strike3.Post, frontmatter as String)
+		  ' Parse `frontmatter` (if any) into this post's data and guaranteed properties.
+		  
+		  using Xojo.Core
+		  using Xojo.Data
+		  
+		  if frontmatter = "" then
+		    post.date = post.file.ModificationDate.ToModernDate
+		    post.slug = post.file.NameWithoutMDExtension.Slugify
+		    post.title = post.slug
+		    return
+		  end if
+		  
+		  try
+		    post.data = ParseJSON(frontmatter.ToText)
+		    ' Have the required post properties been overriden by the frontmatter?
+		    ' Date.
+		    if post.data.HasKey("date") then
+		      post.date = Date.FromText(post.data.Value("date"))
+		      post.data.Remove("date")
+		    else
+		      post.date = post.file.ModificationDate.ToModernDate
+		    end if
+		    ' Draft
+		    if post.data.HasKey("draft") then
+		      post.draft = post.data.Value("draft")
+		      post.data.Remove("draft")
+		    end if
+		    ' Slug.
+		    if post.data.HasKey("slug") then
+		      post.slug = post.data.Value("slug")
+		      post.data.Remove("slug")
+		    else
+		      post.slug = post.file.NameWithoutMDExtension.Slugify
+		    end if
+		    ' Title.
+		    if post.data.HasKey("title") then
+		      post.title = post.data.Value("title")
+		      post.data.Remove("title")
+		    else
+		      post.title = post.file.NameWithoutMDExtension.Slugify
+		    end if
+		    ' Tags.
+		    if post.data.HasKey("tags") then
+		      dim autoTags() as Auto = post.data.Value("tags")
+		      post.data.Remove("tags")
+		      for each tag as Text in autoTags
+		        post.tags.Append(tag)
+		      next tag
+		    end if
+		  catch
+		    raise new Error(CurrentMethodName, "The frontmatter within `" + post.file.NativePath + _
+		    "` is not valid JSON.")
+		  end try
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Function Permalink(f as FolderItem) As String
+		  ' Returns what will be the public URL of the passed file.
+		  
+		  return if(baseURL.Right(1) = "/", baseURL.Left(baseURL.Length - 1), baseURL) + _
+		  f.NativePath.Replace(publicFolder.NativePath, "")
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Sub ReallyDelete(extends theFolder as FolderItem)
 		  ' Deletes the passed FolderItem, even if it contains sub folders and files.
 		  ' We'll use a Shell as it's the fastest way to do this reliably.
@@ -412,6 +742,37 @@ Protected Module Strike3
 		    s.Execute("rm -rf " + theFolder.ShellPath)
 		  #endif
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function SectionForPost(post as Strike3.Post) As String
+		  ' Returns the section for this post.
+		  ' The section is a dot-delimited string value representing where in the /content hierarchy this post is.
+		  ' E.g:
+		  ' www.example.com/blog/first-post.html           section = blog
+		  ' www.example.com/blog/personal/test.html        section = blog.personal
+		  ' www.example.com/about                        } section = about
+		  ' www.example.com/about/index.html             } section = about
+		  ' The passed `post` MUST already have its url correctly set.
+		  
+		  dim section as String
+		  
+		  ' post.url is in the format: baseURL/section1/section[N]/fileName.html
+		  try
+		    section = post.url.Replace(baseURL, "")
+		    section = section.Replace(post.slug + ".html", "")
+		    section = section.ReplaceAll("/", ".").Trim
+		    if section = "" then return ""
+		    if section.Left(1) = "." then section = section.Right(section.Len - 1)
+		    if section.Right(1) = "." then section = section.Left(section.Len - 1)
+		  catch
+		    raise new Error(CurrentMethodName, "Unable to determine post section for `" + _
+		    post.file.NativePath + "`.")
+		  end try
+		  
+		  return section
+		  
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
@@ -433,9 +794,136 @@ Protected Module Strike3
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Function Slugify(Extends s as String) As String
+		  return Slugify(s)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function Slugify(s as String) As String
+		  ' Returns the passed String `s` as a URL-friendly lowercase slug.
+		  ' A slug is the part of an URL which identifies a page using human-readable keywords.
+		  ' URL reserved characters:
+		  '                      ! * ' ( ) ; : @ & = + $ , / ? # [ ]
+		  
+		  dim rg as new RegEx
+		  
+		  rg.Options.ReplaceAllMatches = True
+		  
+		  ' First remove all of the reserved characters
+		  rg.SearchPattern = "([!*'();:@&=+$,/?#[\]])"
+		  rg.ReplacementPattern = ""
+		  s = rg.Replace(s)
+		  
+		  ' Replace % with percent
+		  rg.SearchPattern = "([%])"
+		  rg.ReplacementPattern = "percent"
+		  s = rg.Replace(s)
+		  
+		  ' Replace all whitespace with "-"
+		  rg.SearchPattern = "([\s])"
+		  rg.ReplacementPattern = "-"
+		  s = rg.Replace(s)
+		  
+		  ' Replace -- with -
+		  rg.SearchPattern = "(-){2,}"
+		  rg.ReplacementPattern = "-"
+		  s = rg.Replace(s)
+		  
+		  ' Lowercase it and return
+		  return s.Lowercase()
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function StripHTMLTags(s as String) As String
+		  ' Strips all HTML tags from `s`.
+		  
+		  dim rg as new RegEx
+		  dim match as RegExMatch
+		  
+		  rg.SearchPattern = REGEX_STRIP_HTML
+		  rg.ReplacementPattern = ""
+		  
+		  do
+		    match = rg.Search(s)
+		    if match <> Nil then s = s.Replace(match.SubExpressionString(0), "")
+		  loop until match = Nil
+		  
+		  return rg.Replace(s)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Function ToClassic(Extends f as Xojo.IO.FolderItem) As FolderItem
 		  ' Converts a modern framework FolderItem to a classic framework FolderItem.
 		  return new FolderItem(f.Path, FolderItem.PathTypeNative)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function ToMD5(extends f as FolderItem) As String
+		  ' Returns the MD5 hash for the passed file.
+		  ' On macOS we'll use the built-in md5 command.
+		  
+		  #pragma Warning "Need to check InStr subtraction"
+		  
+		  dim myShell as new Shell
+		  dim result as String
+		  
+		  myShell.Execute("md5 " + f.ShellPath)
+		  
+		  try
+		    ' Example output: MD5 (PATH_TO_FILE) = MD5_HASH
+		    result = myShell.Result
+		    return result.Right(result.Len - InStr(result, "=") - 1)
+		  catch
+		    raise new Error(CurrentMethodName, "Error getting MD5 for file `" + f.NativePath + "`.")
+		  end try
+		  
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function ToModernDate(extends d as Date) As Xojo.Core.Date
+		  return new Xojo.Core.Date(d.Year, d.Month, d.Day, Xojo.Core.TimeZone.Current)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function UnixTime(Extends d as Xojo.Core.Date) As Double
+		  ' A replacement for Xojo.Core.Date.SecondsFrom1970 that returns the Unix time for the passed date, 
+		  ' respecting the current user's time zone.
+		  
+		  using Xojo.Core
+		  
+		  return d.SecondsFrom1970 + (d.TimeZone.SecondsFromGMT - TimeZone.Current.SecondsFromGMT)
+		  
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function URLForFile(file as FolderItem, slug as String) As String
+		  ' Determines the public URL for the passed file.
+		  
+		  dim content, item as FolderItem
+		  dim url as String
+		  
+		  content = root.Child("content")
+		  item = file.Parent
+		  
+		  do until item.NativePath = content.NativePath
+		    
+		    url = if(url = "", item.Name.Slugify + url, item.Name + "/" + url)
+		    
+		    item = item.Parent
+		    
+		  loop
+		  
+		  return baseURL + url + if(url = "", "", "/") + slug + ".html"
 		End Function
 	#tag EndMethod
 
@@ -501,8 +989,8 @@ Protected Module Strike3
 		Private dbFile As FolderItem
 	#tag EndProperty
 
-	#tag Property, Flags = &h21
-		Private publicFolder As FolderItem
+	#tag Property, Flags = &h1
+		Protected publicFolder As FolderItem
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
@@ -530,6 +1018,9 @@ Protected Module Strike3
 	#tag EndConstant
 
 	#tag Constant, Name = DEFAULT_THEME_NAME, Type = Text, Dynamic = False, Default = \"", Scope = Protected
+	#tag EndConstant
+
+	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
 	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"0", Scope = Public
@@ -574,11 +1065,6 @@ Protected Module Strike3
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="root"
-			Group="Behavior"
 			Type="Integer"
 		#tag EndViewProperty
 	#tag EndViewBehavior

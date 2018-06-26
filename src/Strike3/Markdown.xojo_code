@@ -4,8 +4,6 @@ Protected Module Markdown
 		Private Sub Initialise()
 		  ' Initialises the required properties.
 		  
-		  #pragma Warning "TODO: Windows & Linux"
-		  
 		  if initialised then return
 		  
 		  myShell = new Shell
@@ -13,8 +11,6 @@ Protected Module Markdown
 		  try
 		    #if TargetMacOS
 		      pandoc = Xojo.IO.SpecialFolder.GetResource("pandoc").ToClassic
-		    #elseif TargetWindows
-		      ' TODO
 		    #endif
 		  catch
 		    raise new Error(CurrentMethodName, "Unable to get a reference to the pandoc binary.")
