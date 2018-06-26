@@ -1,0 +1,30 @@
+{{partial header}}
+
+  <div class="row">
+    <div class="col-12">
+      {{foreach}}
+      <article class="list">
+        <div class="post-meta">
+          <h2 class="post-title"><a href="{{permalink}}">{{title}}</a></h2>
+          <p class="post-date">
+            {{date.longMonth}} {{date.day}}, {{date.year}}
+            <a class="permalink" title="Permalink" href={{permalink}}>∞</a>
+          </p>
+        </div>
+      </article><!--/.single-->
+      {{endeach}}
+    </div><!--/.col-12-->
+  </div><!--/.row-->
+  <div class="row">
+    <div class="col-12">
+      <div class="list-navigation">
+        <a class="prev-page" href="{{prevPage}}">&larr; Previous</a>
+        <a class="next-page" href="{{nextPage}}">Next &rarr;</a>
+      </div><!--/.list-navigation-->
+    </div><!--/.col-12-->
+  </div><!--/.row-->
+</main>
+</div><!--/.container-->
+</div><!--/#wrap data-sticky-wrap-->
+
+{{partial footer}}
