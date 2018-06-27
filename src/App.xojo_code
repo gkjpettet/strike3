@@ -3,7 +3,16 @@ Protected Class App
 Inherits Application
 	#tag Event
 		Sub Activate()
-		  
+		  ' Strike3.CreateSite("blog", SpecialFolder.Desktop)
+		  ' dim site as FolderItem = SpecialFolder.Desktop.Child("blog")
+		  ' 
+		  ' try
+		  ' Strike3.Build(site)
+		  ' MsgBox("Successfully built site!")
+		  ' catch err as Strike3.Error
+		  ' MsgBox(err.where + ": " + err.message)
+		  ' Quit()
+		  ' end try
 		End Sub
 	#tag EndEvent
 
