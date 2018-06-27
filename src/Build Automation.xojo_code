@@ -13,6 +13,7 @@
 					FolderItem = Li4vLi4vcmVzb3VyY2VzL2RhdGFiYXNlX3NjaGVtYS5zcWw=
 					FolderItem = Li4vLi4vcmVzb3VyY2VzL2JvaWxlcnBsYXRlLzQwNC5odG1s
 					FolderItem = Li4vLi4vcmVzb3VyY2VzL3BhbmRvYy9tYWNPUy9wYW5kb2M=
+					FolderItem = Li4vLi4vcmVzb3VyY2VzL2RlZmF1bHQlMjB0aGVtZS9wcmltYXJ5Lw==
 				End
 			End
 			Begin BuildStepList Windows

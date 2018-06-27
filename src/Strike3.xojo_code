@@ -633,8 +633,50 @@ Protected Module Strike3
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h21
+		Private Sub CreateSampleContent()
+		  ' Create some boilerplate/starter content for the site within `root`.
+		  
+		  const QUOTE = """"
+		  
+		  dim tout as TextOutputStream
+		  dim f as FolderItem
+		  
+		  ' Create a 'Hello World' post.
+		  try
+		    f = root.Child("content").Child("Hello World.md")
+		    tout = TextOutputStream.Create(f)
+		    tout.WriteLine(";;;")
+		    tout.WriteLine(QUOTE + "title" + QUOTE + ": " + QUOTE + "Hello World!" + QUOTE)
+		    tout.WriteLine(";;;")
+		    tout.WriteLine("")
+		    tout.WriteLine("This is your first post. Feel free to edit or delete it.")
+		    tout.Close()
+		  catch
+		    raise new Error(CurrentMethodName, "Unable to create sample content (`Hello World post`).")
+		  end try
+		  
+		  ' Create a test page.
+		  try
+		    root.Child("content").Child("about").CreateAsFolder()
+		    f = root.Child("content").Child("about").Child("index.md")
+		    tout = TextOutputStream.Create(f)
+		    tout.WriteLine(";;;")
+		    tout.WriteLine(QUOTE + "title" + QUOTE + ": " + QUOTE + "Test Page" + QUOTE)
+		    tout.WriteLine(";;;")
+		    tout.WriteLine("")
+		    tout.Write("This is an example of a page. You can find its content in **/content/about/index.md**. ")
+		    tout.Write("Feel free to edit or delete it.")
+		    tout.Close()
+		  catch
+		    raise new Error(CurrentMethodName, "Unable to create sample content (`About page`).")
+		  end try
+		  
+		End Sub
+	#tag EndMethod
+
 	#tag Method, Flags = &h1
-		Protected Function CreateSite(name as String, where as FolderItem) As FolderItem
+		Protected Function CreateSite(name as String, where as FolderItem, sampleContent as Boolean = False) As FolderItem
 		  ' Create a new site named `name` within the parent folder `where`.
 		  ' Returns a reference to the newly created site folder.
 		  
@@ -692,6 +734,17 @@ Protected Module Strike3
 		  catch
 		    raise new Error(CurrentMethodName, "Unable to write to the config.json file.")
 		  end try
+		  
+		  ' Get the default theme from the app's resources folder and copy it.
+		  dim defaultTheme as Xojo.IO.FolderItem = Xojo.IO.SpecialFolder.GetResource("primary")
+		  try
+		    defaultTheme.CopyTo(root.Child("themes").ToModern)
+		  catch
+		    raise new Error(CurrentMethodName, "Unable to copy the default theme root/themes.")
+		  end try
+		  
+		  ' Create some starter content for this new site to get the user going if desired.
+		  if sampleContent then CreateSampleContent()
 		  
 		  ' Create the site's database
 		  CreateDatabase()
@@ -2966,7 +3019,7 @@ Protected Module Strike3
 	#tag Constant, Name = DEFAULT_SITE_TITLE, Type = Text, Dynamic = False, Default = \"My Website", Scope = Protected
 	#tag EndConstant
 
-	#tag Constant, Name = DEFAULT_THEME_NAME, Type = Text, Dynamic = False, Default = \"", Scope = Protected
+	#tag Constant, Name = DEFAULT_THEME_NAME, Type = Text, Dynamic = False, Default = \"primary", Scope = Protected
 	#tag EndConstant
 
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
@@ -2978,7 +3031,7 @@ Protected Module Strike3
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_MINOR, Type = Double, Dynamic = False, Default = \"1", Scope = Public
+	#tag Constant, Name = VERSION_MINOR, Type = Double, Dynamic = False, Default = \"9", Scope = Public
 	#tag EndConstant
 
 
