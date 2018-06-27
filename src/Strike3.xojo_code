@@ -121,8 +121,12 @@ Protected Module Strike3
 		  
 		  ' Set the public folder.
 		  publicFolder = root.Child("public")
-		  if publicFolder.Exists then ReallyDelete(publicFolder)
-		  publicFolder.CreateAsFolder()
+		  ' if publicFolder.Exists then ReallyDelete(publicFolder)
+		  if publicFolder.Exists then
+		    DeleteFolderContents(publicFolder)
+		  else
+		    publicFolder.CreateAsFolder()
+		  end if
 		  
 		  ' Load the site's configuration.
 		  LoadConfig()
@@ -899,6 +903,23 @@ Protected Module Strike3
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
+		Protected Sub DeleteFolderContents(folder as FolderItem)
+		  ' Quickly deletes the contents of a folder.
+		  
+		  if not folder.Directory then return
+		  if folder.ShellPath = "/" then
+		    raise new Error(CurrentMethodName, "Will not allow you to remove the computer's root!")
+		  end if
+		  
+		  dim sh as new Shell
+		  
+		  sh.Mode = 0 ' Synchronous.
+		  sh.Execute("rm -rf " + folder.ShellPath + "/*")
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function ExtractFrontMatter(ByRef s as String) As String
 		  ' Pulls out and removes JSON frontmatter from `s` (if present) and returns it as a String.
 		  ' If present, frontmatter must occur at the beginning of s.
@@ -1013,7 +1034,7 @@ Protected Module Strike3
 		Private Sub FileToDatabase(file as FolderItem)
 		  ' Takes a file and adds it to the site's database if needed.
 		  
-		  Using Xojo.Data
+		  using Xojo.Data
 		  
 		  dim post as new Post(file)
 		  dim tin As TextInputStream
