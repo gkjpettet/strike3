@@ -1116,7 +1116,7 @@ Protected Module Strike3
 		  end if
 		  
 		  url = folder.URLPath ' example: file://path/to/file
-		  url = url.Right(url.Len - url.InStr("content/") - 8)
+		  url = url.Right(url.Len - url.InStr("content/") - 7)
 		  if url = "" then return "" ' Content folder (the root section).
 		  if url.Right(1) = "/" then url = url.Left(url.Len - 1)
 		  return url.ReplaceAll("/", ".")
@@ -3049,7 +3049,7 @@ Protected Module Strike3
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"3", Scope = Public
+	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"4", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public

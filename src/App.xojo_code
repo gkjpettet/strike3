@@ -3,7 +3,7 @@ Protected Class App
 Inherits Application
 	#tag Event
 		Sub Activate()
-		  dim site as FolderItem = SpecialFolder.Desktop.Child("blog")
+		  dim site as FolderItem = SpecialFolder.UserHome.Child("Repos").Child("main-site-strike3").Child("src")
 		  
 		  try
 		    Strike3.Build(site)
