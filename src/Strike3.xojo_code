@@ -103,6 +103,7 @@ Protected Module Strike3
 		      if f.Directory then AddSectionFolder(f, newDestination)
 		    next i
 		  end if
+		  
 		End Sub
 	#tag EndMethod
 
@@ -110,8 +111,6 @@ Protected Module Strike3
 		Protected Sub Build(site as FolderItem)
 		  ' Builds the site.
 		  ' We store the built HTML in root/public.
-		  
-		  dim f as FolderItem
 		  
 		  ' Initialise. This will check for site validity amongst other things.
 		  try
@@ -122,7 +121,8 @@ Protected Module Strike3
 		  
 		  ' Set the public folder.
 		  publicFolder = root.Child("public")
-		  if publicFolder.Exists then publicFolder.ReallyDelete()
+		  if publicFolder.Exists then ReallyDelete(publicFolder)
+		  publicFolder.CreateAsFolder()
 		  
 		  ' Load the site's configuration.
 		  LoadConfig()
@@ -135,14 +135,11 @@ Protected Module Strike3
 		  
 		  ' Publish the 404 page.
 		  try
-		    f = theme.Child("layouts").Child("404.html")
+		    theme.Child("layouts").Child("404.html").ToModern.CopyTo(publicFolder.ToModern.Child("404.html"))
 		  catch
-		    raise new Error(CurrentMethodName, "Missing the theme's 404 page.")
-		  end try
-		  if not CopyFileOrFolder(f, publicFolder.Child("404.html")) then
 		    raise new Error(CurrentMethodName, _
 		    "Unable to copy the 404 page from the theme folder to the public folder.")
-		  end if
+		  end try
 		  
 		  ' Set the verified status of every post in the database to False.
 		  db.SQLExecute("UPDATE posts SET verified=0;")
@@ -557,74 +554,41 @@ Protected Module Strike3
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Function CopyFileOrFolder(source as FolderItem, destination as FolderItem) As Boolean
-		  ' Copies `source` to `destination`.
-		  ' Returns True if OK, False if an error occurs.
-		  
-		  dim newFolder, sourceItem as FolderItem
-		  dim i, sourceCount as Integer
-		  
-		  if source.Directory then ' Copying a folder.
-		    
-		    newFolder = destination.Child(source.Name)
-		    newFolder.CreateAsFolder()
-		    if not newFolder.Exists or not newFolder.Directory then return False
-		    
-		    sourceCount = source.Count
-		    for i = 1 To sourceCount
-		      sourceItem = source.TrueItem(i)
-		      if sourceItem = Nil then return False
-		      if not CopyFileOrFolder(sourceItem, newFolder) then return False
-		    next i
-		    
-		  else ' Copying a file.
-		    source.CopyFileTo(destination)
-		    if source.LastErrorCode <> FolderItem.NoError then return False
-		  end if
-		  
-		  return True
-		  
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
 		Private Sub CopyStorageContent()
-		  ' Copies any files in root/storage to public/storage
+		  ' Copies any files in root/storage to public/storage.
 		  
-		  #pragma Warning "TODO: Implement caching so we only copy files we actually need to"
+		  // TODO: Implement caching so we only copy files we actually need to
 		  
-		  dim f as FolderItem
-		  dim i, count as Integer
+		  dim f, storage, publicStorage as Xojo.IO.FolderItem
 		  
-		  if root.Child("storage").Count > 0 then
-		    count = root.Child("storage").Count
-		    for i = 1 to count
-		      f = root.Child("storage").TrueItem(i)
-		      if not CopyFileOrFolder(f, publicFolder.Child("storage")) then
-		        raise new Error(CurrentMethodName, "Unable to copy storage item.")
-		      end if
-		    next i
+		  publicStorage = publicFolder.ToModern.Child("storage")
+		  
+		  storage = root.Child("storage").ToModern
+		  
+		  if storage.Count > 0 then
+		    for each f in storage.Children
+		      f.CopyTo(publicStorage)
+		    next f
 		  end if
+		  
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
 		Private Sub CopyThemeAssets()
-		  ' Copies any assets provided by the current theme to public/theme/assets
+		  ' Copies any assets provided by the current theme to public/theme/assets.
 		  
-		  dim f as FolderItem
-		  dim i, count as Integer
+		  dim f, themeAssets, publicAssets as Xojo.IO.FolderItem
 		  
-		  if theme.Child("assets").Count > 0 then
-		    f = publicFolder.Child("assets")
+		  publicAssets = publicFolder.ToModern.Child("assets")
+		  themeAssets = theme.Child("assets").ToModern
+		  
+		  if themeAssets.Count > 0 then
+		    f = publicAssets
 		    f.CreateAsFolder()
-		    count = theme.Child("assets").Count
-		    for i = 1 to count
-		      f = theme.Child("assets").TrueItem(i)
-		      if not CopyFileOrFolder(f, publicFolder.Child("assets")) then
-		        raise new Error(CurrentMethodName, "Unable to copy theme asset.")
-		      end if
-		    next i
+		    for each f in themeAssets.Children
+		      f.CopyTo(publicAssets)
+		    next f
 		  end if
 		  
 		  
@@ -745,6 +709,7 @@ Protected Module Strike3
 		  Using Xojo.Data
 		  
 		  dim themes, newTheme, f As FolderItem
+		  dim fModern as Xojo.IO.FolderItem
 		  dim jsonDict as new Xojo.Core.Dictionary
 		  dim tout as TextOutputStream
 		  
@@ -770,7 +735,7 @@ Protected Module Strike3
 		    tout.Write(GenerateJSON(jsonDict))
 		    tout.Close()
 		  catch
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to write to the theme.json file.")
 		  end try
 		  
@@ -778,7 +743,7 @@ Protected Module Strike3
 		  f = newTheme.Child("assets")
 		  f.CreateAsFolder()
 		  if f.LastErrorCode <> FolderItem.NoError then
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the assets folder.")
 		  end if
 		  
@@ -786,7 +751,7 @@ Protected Module Strike3
 		  f = newTheme.Child("layouts")
 		  f.CreateAsFolder()
 		  if f.LastErrorCode <> FolderItem.NoError then
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layout folder.")
 		  end if
 		  
@@ -794,34 +759,30 @@ Protected Module Strike3
 		  try
 		    f = newTheme.Child("layouts").Child("partials")
 		  catch
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to find the `layouts` folder.")
 		  end try
 		  f.CreateAsFolder()
 		  if f.LastErrorCode <> FolderItem.NoError then
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/partials folder.")
 		  end if
 		  
-		  ' layouts/404.html
+		  ' layouts/404.html.
 		  try
-		    f = Xojo.IO.SpecialFolder.GetResource("404.html").ToClassic
+		    fModern = Xojo.IO.SpecialFolder.GetResource("404.html")
+		    fModern.CopyTo(newTheme.Child("layouts").ToModern)
 		  catch
-		    newTheme.ReallyDelete()
-		    raise new Error(CurrentMethodName, _
-		    "Unable to retrieve the 404 boilerplate from the app's resources folder.")
-		  end try
-		  if not CopyFileOrFolder(f, newTheme.Child("layouts")) then
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/404.html file.")
-		  end if
+		  end try
 		  
 		  ' layouts/archive.html
 		  try
 		    tout = TextOutputStream.Create(newTheme.Child("layouts").Child("archive.html"))
 		    tout.Close()
 		  catch e
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/archive.html file.")
 		  End Try
 		  
@@ -830,7 +791,7 @@ Protected Module Strike3
 		    tout = TextOutputStream.Create(newTheme.Child("layouts").Child("archives.html"))
 		    tout.Close()
 		  catch e
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/archives.html file.")
 		  end try
 		  
@@ -839,7 +800,7 @@ Protected Module Strike3
 		    tout = TextOutputStream.Create(newTheme.Child("layouts").Child("home.html"))
 		    tout.Close()
 		  catch e
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/home.html file.")
 		  end try
 		  
@@ -848,7 +809,7 @@ Protected Module Strike3
 		    tout = TextOutputStream.Create(newTheme.Child("layouts").Child("page.html"))
 		    tout.Close()
 		  catch e
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/page.html file.")
 		  end try
 		  
@@ -857,7 +818,7 @@ Protected Module Strike3
 		    tout = TextOutputStream.Create(newTheme.Child("layouts").Child("post.html"))
 		    tout.Close()
 		  catch e
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/post.html file.")
 		  end try
 		  
@@ -866,7 +827,7 @@ Protected Module Strike3
 		    tout = TextOutputStream.Create(newTheme.Child("layouts").Child("list.html"))
 		    tout.Close()
 		  catch e
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/list.html file.")
 		  end try
 		  
@@ -875,7 +836,7 @@ Protected Module Strike3
 		    tout = TextOutputStream.Create(newTheme.Child("layouts").Child("tags.html"))
 		    tout.Close()
 		  catch e
-		    newTheme.ReallyDelete()
+		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/tags.html file.")
 		  end try
 		End Sub
@@ -1562,18 +1523,55 @@ Protected Module Strike3
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
-		Private Sub ReallyDelete(extends theFolder as FolderItem)
-		  ' Deletes the passed FolderItem, even if it contains sub folders and files.
-		  ' We'll use a Shell as it's the fastest way to do this reliably.
+	#tag Method, Flags = &h1
+		Protected Sub ReallyDelete(what as FolderItem)
+		  dim lastErr, itemCount as Integer
+		  dim files(), dirs(), f as FolderItem
 		  
-		  dim s as new Shell
+		  if what = Nil or not what.Exists then return ' Nothing to do.
 		  
-		  #if TargetWindows
-		    s.Execute("rd /s /q " + theFolder.ShellPath)
-		  #else
-		    s.Execute("rm -rf " + theFolder.ShellPath)
-		  #endif
+		  ' Collect the folder‘s contents first.
+		  ' This is faster than collecting them in reverse order and deleting them right away!
+		  itemCount = what.Count
+		  for i as Integer = 1 to itemCount
+		    f = what.TrueItem(i)
+		    if f <> Nil then
+		      if f.Directory then
+		        dirs.Append(f)
+		      else
+		        files.Append(f)
+		      end if
+		    end if
+		  next i
+		  
+		  ' Now delete the files.
+		  for each f in files
+		    f.Delete()
+		    lastErr = f.LastErrorCode ' Check if an error occurred.
+		    if lastErr <> 0 then
+		      ' Cancel the deletion and raise an error.
+		      raise new Error(CurrentMethodName, "Unable to delete `" + f.Name + "`.")
+		    end if
+		  next f
+		  
+		  redim files(-1) ' Free the memory used by the files array before we enter recursion.
+		  
+		  ' Now delete the directories.
+		  for each f in dirs
+		    try
+		      ReallyDelete(f)
+		    catch err as Error
+		      ' Cancel the deletion and propagate the error.
+		      raise new Error(CurrentMethodName, "Unable to delete `" + f.Name + "`.")
+		    end try
+		  next f
+		  
+		  ' The folder should be empty and we can delete it.
+		  what.Delete()
+		  
+		  if what.LastErrorCode <> 0 then
+		    raise new Error(CurrentMethodName, "Unable to delete `" + what.Name + "`.")
+		  end if
 		End Sub
 	#tag EndMethod
 
@@ -2741,6 +2739,16 @@ Protected Module Strike3
 		  end try
 		  
 		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function ToModern(extends f as FolderItem) As Xojo.IO.FolderItem
+		  ' Converts a classic framework FolderItem to the new framework.
+		  
+		  if f = Nil then return Nil
+		  
+		  return new Xojo.IO.FolderItem(f.NativePath.ToText)
 		End Function
 	#tag EndMethod
 
