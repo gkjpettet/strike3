@@ -83,7 +83,8 @@ Protected Class ArchiveMonth
 		#tag ViewProperty
 			Name="longName"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
@@ -94,7 +95,8 @@ Protected Class ArchiveMonth
 		#tag ViewProperty
 			Name="shortName"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"

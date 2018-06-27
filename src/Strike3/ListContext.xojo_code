@@ -37,12 +37,14 @@ Protected Class ListContext
 		#tag ViewProperty
 			Name="nextPage"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="prevPage"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
@@ -53,7 +55,8 @@ Protected Class ListContext
 		#tag ViewProperty
 			Name="tag"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"

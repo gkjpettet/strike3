@@ -10,7 +10,8 @@ Protected Module Markdown
 		  
 		  try
 		    #if TargetMacOS
-		      pandoc = Xojo.IO.SpecialFolder.GetResource("pandoc").ToClassic
+		      'pandoc = Xojo.IO.SpecialFolder.GetResource("pandoc").ToClassic
+		      pandoc = App.ExecutableFile.Parent.Child("pandoc")
 		    #endif
 		  catch
 		    raise new Error(CurrentMethodName, "Unable to get a reference to the pandoc binary.")

@@ -32,7 +32,8 @@ Protected Class RSSItem
 		#tag ViewProperty
 			Name="description"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Index"
@@ -51,7 +52,8 @@ Protected Class RSSItem
 		#tag ViewProperty
 			Name="link"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
@@ -68,7 +70,8 @@ Protected Class RSSItem
 		#tag ViewProperty
 			Name="title"
 			Group="Behavior"
-			Type="Text"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"

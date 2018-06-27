@@ -160,14 +160,14 @@ Protected Module Strike3
 		  ' Copy storage contents.
 		  CopyStorageContent()
 		  
+		  ' Site navigation.
+		  BuildNavigation()
+		  
 		  ' Tags.
 		  BuildTags()
 		  
 		  ' Archives.
 		  BuildArchives()
-		  
-		  ' Site navigation.
-		  BuildNavigation()
 		  
 		  ' Render the posts in the database.
 		  RenderPosts()
@@ -614,7 +614,8 @@ Protected Module Strike3
 		  end if
 		  
 		  ' Get the database schema file from within the app's Resources folder.
-		  schema = Xojo.IO.SpecialFolder.GetResource("database_schema.sql").ToClassic
+		  'schema = Xojo.IO.SpecialFolder.GetResource("database_schema.sql").ToClassic
+		  schema = App.ExecutableFile.Parent.Child("database_schema.sql")
 		  
 		  ' Get the contents of the database schema file as a String.
 		  try
@@ -676,7 +677,7 @@ Protected Module Strike3
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Function CreateSite(name as String, where as FolderItem, sampleContent as Boolean = False) As FolderItem
+		Protected Function CreateSite(name as String, where as FolderItem, sampleContent as Boolean = True) As FolderItem
 		  ' Create a new site named `name` within the parent folder `where`.
 		  ' Returns a reference to the newly created site folder.
 		  
@@ -736,7 +737,8 @@ Protected Module Strike3
 		  end try
 		  
 		  ' Get the default theme from the app's resources folder and copy it.
-		  dim defaultTheme as Xojo.IO.FolderItem = Xojo.IO.SpecialFolder.GetResource("primary")
+		  'dim defaultTheme as Xojo.IO.FolderItem = Xojo.IO.SpecialFolder.GetResource("primary")
+		  dim defaultTheme as Xojo.IO.FolderItem = App.ExecutableFile.Parent.ToModern.Child("primary")
 		  try
 		    defaultTheme.CopyTo(root.Child("themes").ToModern)
 		  catch
@@ -823,7 +825,8 @@ Protected Module Strike3
 		  
 		  ' layouts/404.html.
 		  try
-		    fModern = Xojo.IO.SpecialFolder.GetResource("404.html")
+		    'fModern = Xojo.IO.SpecialFolder.GetResource("404.html")
+		    fModern = App.ExecutableFile.Parent.ToModern.Child("404.html")
 		    fModern.CopyTo(newTheme.Child("layouts").ToModern)
 		  catch
 		    ReallyDelete(newTheme)
@@ -1536,7 +1539,7 @@ Protected Module Strike3
 		    end if
 		  catch
 		    raise new Error(CurrentMethodName, "The frontmatter within `" + post.file.NativePath + _
-		    "` is not valid JSON.")
+		    "` is not valid.")
 		  end try
 		  
 		End Sub
@@ -3025,7 +3028,7 @@ Protected Module Strike3
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"0", Scope = Public
+	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"3", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public

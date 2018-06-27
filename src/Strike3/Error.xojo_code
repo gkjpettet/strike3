@@ -65,6 +65,12 @@ Inherits RuntimeException
 			Group="Behavior"
 			Type="Text"
 		#tag EndViewProperty
+		#tag ViewProperty
+			Name="where"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
 #tag EndClass

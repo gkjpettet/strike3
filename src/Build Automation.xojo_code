@@ -8,7 +8,7 @@
 				End
 				Begin CopyFilesBuildStep CopyFilesMac
 					AppliesTo = 0
-					Destination = 1
+					Destination = 0
 					Subdirectory = 
 					FolderItem = Li4vLi4vcmVzb3VyY2VzL2RhdGFiYXNlX3NjaGVtYS5zcWw=
 					FolderItem = Li4vLi4vcmVzb3VyY2VzL2JvaWxlcnBsYXRlLzQwNC5odG1s
