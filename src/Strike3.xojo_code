@@ -10,7 +10,7 @@ Protected Module Strike3
 		  for i = 1 to folderCount
 		    f = folder.TrueItem(i)
 		    if f.Directory then
-		      ni = new NavigationItem(f.Name, NavigationPermalink(f), "", parent)
+		      ni = new NavigationItem(f.Name, NavigationPermalink(f), f.Name.Slugify, parent)
 		      parent.children.Append(ni.AddNavigationChildren(f))
 		    end if
 		  next i
@@ -181,6 +181,9 @@ Protected Module Strike3
 		  
 		  ' Create the RSS feed (if desired).
 		  if config.Value("rss") then ConstructRSSFeed()
+		  
+		  ' Run post build scripts.
+		  RunScripts()
 		End Sub
 	#tag EndMethod
 
@@ -439,7 +442,7 @@ Protected Module Strike3
 		  end if
 		  
 		  ' Convert the siteNavTree into HTML and cache it.
-		  siteNavigationHTML = siteNavTree.NavItemToHTML("site-nav")
+		  siteNavigationHTML = siteNavTree.NavItemToHTML()
 		End Sub
 	#tag EndMethod
 
@@ -829,7 +832,6 @@ Protected Module Strike3
 		  
 		  ' layouts/404.html.
 		  try
-		    'fModern = Xojo.IO.SpecialFolder.GetResource("404.html")
 		    fModern = App.ExecutableFile.Parent.ToModern.Child("404.html")
 		    fModern.CopyTo(newTheme.Child("layouts").ToModern)
 		  catch
@@ -2541,6 +2543,48 @@ Protected Module Strike3
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Sub RunScripts()
+		  ' Strike allows the running of custom XojoScript after the build has been completed.
+		  ' Each script's context will be passed the path of the public folder and the path of the 
+		  ' current theme folder.
+		  ' There are many uses for these scripts - most commonly to copy additional files to the 
+		  ' site root.
+		  
+		  ' Is there a `scripts` folder?
+		  dim scriptsFolder as FolderItem = root.Child("scripts")
+		  if not scriptsFolder.Exists then return
+		  
+		  dim i, limit as Integer
+		  dim f, scriptFiles() as FolderItem
+		  
+		  ' Collate all the .script files in this folder.
+		  limit = scriptsFolder.Count
+		  for i = 1 to limit
+		    f = scriptsFolder.TrueItem(i)
+		    if f.Name.Right(11) = ".xojoscript" then
+		      scriptFiles.Append(f)
+		    end if
+		  next i
+		  
+		  if scriptFiles.Ubound < 0 then return ' No scripts.
+		  
+		  ' Run each script.
+		  dim context as new ScriptContext
+		  dim script as StrikeScript
+		  limit = scriptFiles.Ubound
+		  for i = 0 to limit
+		    script = new StrikeScript(scriptFiles(i), context)
+		    try
+		      script.Run()
+		    catch
+		      raise new Error(CurrentMethodName, _
+		      "An error occurred in the `" + scriptFiles(i).NativePath + "` script.")
+		    end try
+		  next i
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Function SectionForPost(post as Strike3.Post) As String
 		  ' Returns the section for this post.
 		  ' The section is a dot-delimited string value representing where in the /content hierarchy this post is.
@@ -3020,8 +3064,8 @@ Protected Module Strike3
 		Private siteNavTree As Strike3.NavigationItem
 	#tag EndProperty
 
-	#tag Property, Flags = &h21
-		Private theme As FolderItem
+	#tag Property, Flags = &h1
+		Protected theme As FolderItem
 	#tag EndProperty
 
 
@@ -3049,7 +3093,7 @@ Protected Module Strike3
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"4", Scope = Public
+	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"5", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public
