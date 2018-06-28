@@ -706,10 +706,14 @@ Protected Module Strike3
 		    end if
 		  end if
 		  
-		  ' Create the required folders (content, storage, themes)
+		  ' Create the required folders (content, scripts, storage, themes)
 		  root.Child("content").CreateAsFolder()
 		  if root.LastErrorCode <> FolderItem.NoError then
 		    raise new Error(CurrentMethodName, "Unable to create the `content` folder for the site.")
+		  end if
+		  root.Child("scripts").CreateAsFolder()
+		  if root.LastErrorCode <> FolderItem.NoError then
+		    raise new Error(CurrentMethodName, "Unable to create the `scripts` folder for the site.")
 		  end if
 		  root.Child("storage").CreateAsFolder()
 		  if root.LastErrorCode <> FolderItem.NoError then
@@ -2929,6 +2933,7 @@ Protected Module Strike3
 		  
 		  if site = Nil or not site.Exists then return False
 		  if site.Child("content") = Nil or not site.Child("content").Exists then return False
+		  if site.Child("scripts") = Nil or not site.Child("scripts").Exists then return False
 		  if site.Child("storage") = Nil or not site.Child("storage").Exists then return False
 		  if site.Child("themes") = Nil or not site.Child("themes").Exists then return False
 		  if site.Child("site.data") = Nil or not site.Child("site.data").Exists then return False
