@@ -2302,6 +2302,11 @@ Protected Module Strike3
 		  if tag = "assets" then return SpecialURL("assets")
 		  
 		  ' ------------------------------------------------------
+		  ' {{storage}}
+		  ' ------------------------------------------------------
+		  if tag = "storage" then return SpecialURL("storage")
+		  
+		  ' ------------------------------------------------------
 		  ' {{navigation}}
 		  ' ------------------------------------------------------
 		  if tag = "navigation" then return siteNavigationHTML
@@ -2372,6 +2377,11 @@ Protected Module Strike3
 		  ' {{assets}}
 		  ' ------------------------------------------------------
 		  if tag = "assets" then return SpecialURL("assets")
+		  
+		  ' ------------------------------------------------------
+		  ' {{storage}}
+		  ' ------------------------------------------------------
+		  if tag = "storage" then return SpecialURL("storage")
 		  
 		  ' ------------------------------------------------------
 		  ' {{navigation}}
@@ -2478,6 +2488,11 @@ Protected Module Strike3
 		  ' {{assets}}
 		  ' ------------------------------------------------------
 		  if tag = "assets" then return SpecialURL("assets")
+		  
+		  ' ------------------------------------------------------
+		  ' {{storage}}
+		  ' ------------------------------------------------------
+		  if tag = "storage" then return SpecialURL("storage")
 		  
 		  ' ------------------------------------------------------
 		  ' {{navigation}}
@@ -2768,6 +2783,8 @@ Protected Module Strike3
 		  select case name
 		  case "assets"
 		    return baseURL + "assets"
+		  case "storage"
+		    return baseURL + "storage"
 		  end select
 		  
 		End Function
@@ -3098,7 +3115,7 @@ Protected Module Strike3
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"5", Scope = Public
+	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"6", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public
