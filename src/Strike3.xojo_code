@@ -2432,7 +2432,15 @@ Protected Module Strike3
 		  ' ------------------------------------------------------
 		  ' List tags
 		  ' ------------------------------------------------------
-		  if tag = "content" then return post.contents
+		  if tag = "content" then
+		    ' Return the post's contents UNLESS the frontmatter specifies that this post is to be shortened 
+		    ' on list pages with the "longPost": true value.
+		    if post.data.Lookup("longPost", False) then
+		      return post.Summary()
+		    else
+		      return post.contents
+		    end if
+		  end if
 		  if tag = "date" then return post.date.ToText
 		  if tag = "date.second" then return if(post.date.Second < 10, "0" + Str(post.date.Second), Str(post.date.Second))
 		  if tag = "date.minute" then return if(post.date.Minute < 10, "0" + Str(post.date.Minute), Str(post.date.Minute))
@@ -3115,7 +3123,7 @@ Protected Module Strike3
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"6", Scope = Public
+	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"7", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public
