@@ -592,6 +592,8 @@ List pages are automatically created by Strike3 at the root of the site as `http
 - `{{nextPage}}`: The URL to the next page in a paginated list of posts
 - `{{prevPage}}`: The URL to the previous page in a paginated list of posts
 
+It is worth noting that the value returned to the template of `{{content}}` can be modified on list pages if the `longPost` variable in the frontmatter of a post is set to `true`. If this is the case then a shortened summary of the post will be returned instead of the full contents on list pages only. This is useful if the post is either very long or perhaps contains lots of images that you don't want to be displayed on the post listing page.
+
 ### Archive variables
 - `{{archives.months}}`: HTML list of your site’s content by month (e.g. Jan)
 - `{{archives.longMonths}}`: HTML list of your site’s content by month (e.g. January)
