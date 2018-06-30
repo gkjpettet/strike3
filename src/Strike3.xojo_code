@@ -277,7 +277,7 @@ Protected Module Strike3
 		  ' Build an unordered HTML list of the archives by short and long month.
 		  ' These are avaliable as {{archives.months}} and {{archives.longMonths}} tags.
 		  archiveMonthsHTML = "<ul class=" + QUOTE + "archive-months" + QUOTE + ">"
-		  archiveLongMonthsHTML = "<ul class=" + QUOTE + "archive-long-months" + QUOTE + ">"t
+		  archiveLongMonthsHTML = "<ul class=" + QUOTE + "archive-long-months" + QUOTE + ">"
 		  for each arcYear in archiveTree
 		    for each arcMonth In arcYear.months
 		      url = publicFolder.Child("archive").Child(Str(arcYear.value)).Child(Str(arcMonth.value)).ToPermalink
@@ -3123,13 +3123,13 @@ Protected Module Strike3
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"8", Scope = Public
+	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"0", Scope = Public
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public
+	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"1", Scope = Public
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_MINOR, Type = Double, Dynamic = False, Default = \"9", Scope = Public
+	#tag Constant, Name = VERSION_MINOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public
 	#tag EndConstant
 
 

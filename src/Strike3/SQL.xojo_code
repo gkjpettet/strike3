@@ -46,11 +46,11 @@ Protected Module SQL
 		  if buildDrafts then
 		    return "SELECT DISTINCT(date_day) AS day FROM posts WHERE date_year='" + year.ToText + "' " +_
 		    "AND date_month='" + month.ToText + "' " +_
-		    "AND page='0' AND homepage='0';"
+		    "AND page='0' AND homepage='0' ORDER BY date_day DESC;"
 		  else
 		    return "SELECT DISTINCT(date_day) AS day FROM posts WHERE date_year='" + year.ToText + "' " +_
 		    "AND date_month='" + month.ToText + "' " +_
-		    "AND page='0' AND homepage='0 AND draft=0';"
+		    "AND page='0' AND homepage='0 AND draft=0' ORDER BY date_day DESC;"
 		  end if
 		End Function
 	#tag EndMethod
@@ -59,16 +59,16 @@ Protected Module SQL
 		Protected Function MonthsWithPostsInYear(year as Integer) As String
 		  ' Returns the SQL statement to return a record set containing the months from the specified year
 		  ' that have posts.
-		  ' Exclude pages.
+		  ' Excludes pages.
 		  
 		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
 		  
 		  if buildDrafts then
 		    return "SELECT DISTINCT(date_month) AS month FROM posts WHERE date_year='" + year.ToText + "' " + _
-		    "AND page='0' AND homepage='0';"
+		    "AND page='0' AND homepage='0' ORDER BY date_month DESC;"
 		  else
 		    return "SELECT DISTINCT(date_month) AS month FROM posts WHERE date_year='" + year.ToText + "' " + _
-		    "AND page='0' AND homepage='0 AND draft=0';"
+		    "AND page='0' AND homepage='0 AND draft=0' ORDER BY date_month DESC;"
 		  end if
 		  
 		End Function
