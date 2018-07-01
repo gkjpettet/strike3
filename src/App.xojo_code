@@ -1,43 +1,52 @@
 #tag Class
 Protected Class App
-Inherits Application
+Inherits ConsoleApplication
 	#tag Event
-		Sub Activate()
-		  dim site as FolderItem = SpecialFolder.UserHome.Child("Repos").Child("main-site-strike3").Child("src")
+		Function Run(args() as String) As Integer
+		  using CommandLine
 		  
-		  try
-		    Strike3.Build(site)
-		    MsgBox("Successfully built site!")
-		  catch err as Strike3.Error
-		    MsgBox(err.where + ": " + err.message)
-		    Quit()
-		  end try
-		End Sub
+		  ' Remove the executable path (always passed as the first argument).
+		  args.Remove(0)
+		  
+		  ' If no arguments passed we'll just print the basic usage and exit.
+		  if args.Ubound < 0 then Help.BasicUsage
+		  
+		  ' Work out which command to run
+		  select case args(0).Lowercase
+		  case "build"
+		    command = CommandType.build
+		  case "create"
+		    command = CommandType.create
+		  case "help"
+		    command = CommandType.help
+		  case "set"
+		    command = CommandType.set
+		  case "version"
+		    command = CommandType.version
+		  else
+		    PrintError("[" + args(0) + "] is an unknown command.")
+		  end select
+		  
+		  ' Remove the command from the arguments array.
+		  args.Remove(0)
+		  
+		  ' Parse the command options.
+		  ParseCommandOptions(args)
+		  
+		  ' Run the command.
+		  RunCommand()
+		  
+		  exception err as Strike3.Error
+		    PrintError(err.message)
+		End Function
 	#tag EndEvent
 
 	#tag Event
 		Function UnhandledException(error As RuntimeException) As Boolean
-		  MsgBox("An unhandled exception occurred: " + error.message)
+		  CommandLine.PrintError("An unhandled error occurred: " + error.message)
 		End Function
 	#tag EndEvent
 
 
-	#tag Constant, Name = kEditClear, Type = String, Dynamic = False, Default = \"&Delete", Scope = Public
-		#Tag Instance, Platform = Windows, Language = Default, Definition  = \"&Delete"
-		#Tag Instance, Platform = Linux, Language = Default, Definition  = \"&Delete"
-	#tag EndConstant
-
-	#tag Constant, Name = kFileQuit, Type = String, Dynamic = False, Default = \"&Quit", Scope = Public
-		#Tag Instance, Platform = Windows, Language = Default, Definition  = \"E&xit"
-	#tag EndConstant
-
-	#tag Constant, Name = kFileQuitShortcut, Type = String, Dynamic = False, Default = \"", Scope = Public
-		#Tag Instance, Platform = Mac OS, Language = Default, Definition  = \"Cmd+Q"
-		#Tag Instance, Platform = Linux, Language = Default, Definition  = \"Ctrl+Q"
-	#tag EndConstant
-
-
-	#tag ViewBehavior
-	#tag EndViewBehavior
 End Class
 #tag EndClass
