@@ -28,11 +28,10 @@ This is the comprehensive guide to my static site generator.
 
 ## <a id="intro">Introduction</a>
 Strike3 is a static site generator. Put simply, Strike3 takes a folder of Markdown files and a theme (a collection of HTML files) and uses those to create a completely self-contained website.
-Strike3 is the name of the engine (and my youngest daughter) and `strike3` is the name of the command line tool. It's written in [Xojo][xojo].
+Strike3 is the name of the engine and `strike3` is the name of the command line tool. It's written in [Xojo][xojo].
 
 ## <a id="installation">Installation</a>
-**macOS**  
-If you're using macOS you can use the excellent [Homebrew][homebrew] package manager to quickly install Strike3:
+Although Xojo is cross-platform, currently only macOS is supported. I am working on Windows and Linux support at the moment. On macOS, you can use the excellent [Homebrew][homebrew] package manager to quickly install Strike3:
 ```
 brew tap gkjpettet/homebrew-strike3
 brew install strike3
