@@ -613,7 +613,7 @@ Protected Module Strike3
 		  
 		  #if TargetMacOS or TargetLinux
 		    dim modernFolderItem as Xojo.IO.FolderItem = f.ToModern
-		    modernFolderItem.CopyTo(destination)
+		    modernFolderItem.CopyTo(destination.ToModern)
 		    return
 		  #endif
 		  
