@@ -47,7 +47,13 @@ Protected Module Markdown
 		  end try
 		  
 		  ' Use pandoc to transform the contents of our temporary file to HTML
-		  dim command as String = pandoc.ShellPath + " " + QUOTE + tempFile.ShellPath + QUOTE + " " + OPTIONS
+		  dim command as String
+		  
+		  #if TargetMacOS or TargetLinux
+		    command = pandoc.ShellPath + " " + tempFile.ShellPath + " " + OPTIONS
+		  #else '  Need to quote the temp file path on Windows.
+		    command = pandoc.ShellPath + " " + QUOTE + tempFile.ShellPath + QUOTE + " " + OPTIONS
+		  #endif
 		  myShell.Execute(command)
 		  
 		  ' Delete the temporary file

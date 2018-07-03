@@ -1575,7 +1575,8 @@ Protected Module Strike3
 		    end if
 		    ' Slug.
 		    if post.data.HasKey("slug") then
-		      post.slug = post.data.Value("slug")
+		      ' We need to slugify the specified slug in case it contains invalid HTML characters.
+		      post.slug = Slugify(CType(post.data.Value("slug"), String))
 		      post.data.Remove("slug")
 		    else
 		      post.slug = post.file.NameWithoutMDExtension.Slugify
