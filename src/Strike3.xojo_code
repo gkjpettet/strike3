@@ -564,8 +564,6 @@ Protected Module Strike3
 		Private Sub CopyStorageContent()
 		  ' Copies any files in root/storage to public/storage.
 		  
-		  #pragma Warning "TODO: Implement caching so we only copy files we actually need to"
-		  
 		  dim storage, publicStorage as FolderItem
 		  dim i, limit as Integer
 		  
@@ -769,6 +767,7 @@ Protected Module Strike3
 		  try
 		    jsonDict.Value("archives") = DEFAULT_ARCHIVES
 		    jsonDict.Value("baseURL") = DEFAULT_BASE_URL
+		    jsonDict.Value("buildDrafts") = DEFAULT_BUILD_DRAFTS
 		    jsonDict.Value("description") = DEFAULT_DESCRIPTION
 		    jsonDict.Value("postsPerPage") = DEFAULT_POSTS_PER_PAGE
 		    jsonDict.Value("theme") = DEFAULT_THEME_NAME
@@ -1619,7 +1618,7 @@ Protected Module Strike3
 		  ' `section` should be dot-delimited (e.g: blog.personal for posts in content/blog/personal).
 		  
 		  dim rs as RecordSet
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    rs = db.SQLSelect("SELECT COUNT(*) FROM posts WHERE section='" + section + "';")
@@ -2193,7 +2192,7 @@ Protected Module Strike3
 		  
 		  dim rs as RecordSet
 		  dim p as Strike3.Post
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  ' Get the posts as a RecordSet.
 		  if buildDrafts then
@@ -2736,7 +2735,7 @@ Protected Module Strike3
 		  ' Returns the number of posts in the site.
 		  
 		  dim rs as RecordSet
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    rs = db.SQLSelect("SELECT COUNT(*) FROM posts WHERE page=0;")
@@ -3135,6 +3134,9 @@ Protected Module Strike3
 	#tag EndConstant
 
 	#tag Constant, Name = DEFAULT_BASE_URL, Type = Text, Dynamic = False, Default = \"/", Scope = Protected
+	#tag EndConstant
+
+	#tag Constant, Name = DEFAULT_BUILD_DRAFTS, Type = Boolean, Dynamic = False, Default = \"False", Scope = Protected
 	#tag EndConstant
 
 	#tag Constant, Name = DEFAULT_DESCRIPTION, Type = Text, Dynamic = False, Default = \"My great website", Scope = Protected

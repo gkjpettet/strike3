@@ -7,7 +7,7 @@ Protected Module SQL
 		  
 		  using Xojo.Core
 		  
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  dim offset as Integer = (currentPage * postsPerPage) - postsPerPage
 		  
 		  if buildDrafts then
@@ -41,7 +41,7 @@ Protected Module SQL
 		  ' year that have posts.
 		  ' Exclude pages.
 		  
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT DISTINCT(date_day) AS day FROM posts WHERE date_year='" + year.ToText + "' " +_
@@ -61,7 +61,7 @@ Protected Module SQL
 		  ' that have posts.
 		  ' Excludes pages.
 		  
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT DISTINCT(date_month) AS month FROM posts WHERE date_year='" + year.ToText + "' " + _
@@ -79,7 +79,7 @@ Protected Module SQL
 		  ' Returns the SQL statement to return the number of posts from the specified day, month and year.
 		  ' Don't include pages.
 		  
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT COUNT(*) AS 'total' FROM posts WHERE date_year='" + year.ToText + "' " +_
@@ -101,7 +101,7 @@ Protected Module SQL
 		  ' Returns the SQL statement to return the number of posts from the specified month and year.
 		  ' Don't include pages.
 		  
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT COUNT(*) AS 'total' FROM posts WHERE date_year='" + year.ToText + "' " +_
@@ -130,7 +130,7 @@ Protected Module SQL
 		Protected Function PostCountForYear(year as Integer) As String
 		  ' Returns the SQL statement to return the number of posts from the specified year.
 		  
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT COUNT(*) AS 'total' FROM posts WHERE date_year='" + year.ToText + "' " +_
@@ -150,7 +150,7 @@ Protected Module SQL
 		  ' Don't include pages.
 		  
 		  dim offset as Integer = (currentPage * postsPerPage) - postsPerPage
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT * FROM posts WHERE date_year='" + year.ToText + "' " + _
@@ -178,7 +178,7 @@ Protected Module SQL
 		  ' Don't include pages.
 		  
 		  dim offset As Integer = (currentPage * postsPerPage) - postsPerPage
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT * FROM posts WHERE date_year='" + year.ToText + "' " + _
@@ -206,7 +206,7 @@ Protected Module SQL
 		  using Xojo.Core
 		  
 		  dim offset as Integer = (currentPage * postsPerPage) - postsPerPage
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT * FROM posts WHERE section='" + section + "' " + _
@@ -240,7 +240,7 @@ Protected Module SQL
 		  ' Don't include pages.
 		  
 		  dim offset as Integer = (currentPage * postsPerPage) - postsPerPage
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT * FROM posts WHERE date_year='" + year.ToText + "' " +_
@@ -272,7 +272,7 @@ Protected Module SQL
 		  ' Returns the SQL statement to return a record set containing the years that have posts.
 		  ' Exclude pages.
 		  
-		  dim buildDrafts as Boolean = config.Lookup("buildDrafts", True)
+		  dim buildDrafts as Boolean = config.Lookup("builddrafts", False)
 		  
 		  if buildDrafts then
 		    return "SELECT DISTINCT(date_year) AS year FROM posts WHERE page='0' " + _
