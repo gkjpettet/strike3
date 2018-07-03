@@ -139,7 +139,7 @@ Protected Module Strike3
 		  
 		  ' Publish the 404 page.
 		  try
-		    theme.Child("layouts").Child("404.html").ToModern.CopyTo(publicFolder.ToModern.Child("404.html"))
+		    theme.Child("layouts").Child("404.html").CopyTo(publicFolder)
 		  catch
 		    raise new Error(CurrentMethodName, _
 		    "Unable to copy the 404 page from the theme folder to the public folder.")
@@ -564,19 +564,20 @@ Protected Module Strike3
 		Private Sub CopyStorageContent()
 		  ' Copies any files in root/storage to public/storage.
 		  
-		  // TODO: Implement caching so we only copy files we actually need to
+		  #pragma Warning "TODO: Implement caching so we only copy files we actually need to"
 		  
-		  dim f, storage, publicStorage as Xojo.IO.FolderItem
+		  dim storage, publicStorage as FolderItem
+		  dim i, limit as Integer
 		  
-		  publicStorage = publicFolder.ToModern.Child("storage")
+		  publicStorage = publicFolder.Child("storage")
 		  
-		  storage = root.Child("storage").ToModern
+		  storage = root.Child("storage")
 		  
-		  if storage.Count > 0 then
-		    for each f in storage.Children
-		      f.CopyTo(publicStorage)
-		    next f
-		  end if
+		  limit = storage.Count
+		  for i = 1 to limit
+		    storage.TrueItem(i).CopyTo(publicStorage)
+		  next i
+		  
 		  
 		End Sub
 	#tag EndMethod
@@ -585,20 +586,52 @@ Protected Module Strike3
 		Private Sub CopyThemeAssets()
 		  ' Copies any assets provided by the current theme to public/theme/assets.
 		  
-		  dim f, themeAssets, publicAssets as Xojo.IO.FolderItem
+		  dim f, themeAssets, publicAssets as FolderItem
+		  dim i, limit as Integer
 		  
-		  publicAssets = publicFolder.ToModern.Child("assets")
-		  themeAssets = theme.Child("assets").ToModern
+		  publicAssets = publicFolder.Child("assets")
+		  themeAssets = theme.Child("assets")
 		  
 		  if themeAssets.Count > 0 then
 		    f = publicAssets
 		    f.CreateAsFolder()
-		    for each f in themeAssets.Children
-		      f.CopyTo(publicAssets)
-		    next f
+		    limit = themeAssets.Count
+		    for i = 1 to limit
+		      themeAssets.TrueItem(i).CopyTo(publicAssets)
+		    next i
 		  end if
 		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Sub CopyTo(Extends f as FolderItem, destination as FolderItem)
+		  ' Provides a convenient way of copying a classic FolderItem. On macOS and Linux we convert the passed 
+		  ' classic FolderItem to a modern framework FolderItem and do the copy.
+		  ' There is a weird bug on Windows with Xojo.IO.FolderItem.CopyTo() so we use a Shell and the built-in 
+		  ' Windows robocopy command to do the copy instead.
 		  
+		  #if TargetMacOS or TargetLinux
+		    dim modernFolderItem as Xojo.IO.FolderItem = f.ToModern
+		    modernFolderItem.CopyTo(destination)
+		    return
+		  #endif
+		  
+		  const QUOTE = """"
+		  
+		  dim s as new shell
+		  dim fPath, destPath as String
+		  
+		  ' We are passed in the folder to copy into so we need to specify the name of the folder that will be created
+		  destination = destination.Child(f.Name)
+		  
+		  ' Remove any trailing backslashes for robocopy
+		  destPath = if(destination.NativePath.Right(1) = "\", _
+		  destination.NativePath.Left(destination.NativePath.Len - 1), destination.NativePath)
+		  fPath = if(f.NativePath.Right(1) = "\", f.NativePath.Left(f.NativePath.Len - 1), f.NativePath)
+		  
+		  ' Do the copy
+		  s.Execute("robocopy /E " + QUOTE + fPath + QUOTE + " " + QUOTE + destPath + QUOTE)
 		End Sub
 	#tag EndMethod
 
@@ -748,10 +781,9 @@ Protected Module Strike3
 		  end try
 		  
 		  ' Get the default theme from the app's resources folder and copy it.
-		  'dim defaultTheme as Xojo.IO.FolderItem = Xojo.IO.SpecialFolder.GetResource("primary")
-		  dim defaultTheme as Xojo.IO.FolderItem = App.ExecutableFile.Parent.ToModern.Child("primary")
+		  dim defaultTheme as FolderItem = App.ExecutableFile.Parent.Child("primary")
 		  try
-		    defaultTheme.CopyTo(root.Child("themes").ToModern)
+		    defaultTheme.CopyTo(root.Child("themes"))
 		  catch
 		    raise new Error(CurrentMethodName, "Unable to copy the default theme root/themes.")
 		  end try
@@ -775,7 +807,6 @@ Protected Module Strike3
 		  Using Xojo.Data
 		  
 		  dim themes, newTheme, f As FolderItem
-		  dim fModern as Xojo.IO.FolderItem
 		  dim jsonDict as new Xojo.Core.Dictionary
 		  dim tout as TextOutputStream
 		  
@@ -836,8 +867,8 @@ Protected Module Strike3
 		  
 		  ' layouts/404.html.
 		  try
-		    fModern = App.ExecutableFile.Parent.ToModern.Child("404.html")
-		    fModern.CopyTo(newTheme.Child("layouts").ToModern)
+		    f = App.ExecutableFile.Parent.Child("404.html")
+		    f.CopyTo(newTheme.Child("layouts"))
 		  catch
 		    ReallyDelete(newTheme)
 		    raise new Error(CurrentMethodName, "Unable to create the layouts/404.html file.")
@@ -3129,7 +3160,7 @@ Protected Module Strike3
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"1", Scope = Public
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_MINOR, Type = Double, Dynamic = False, Default = \"0", Scope = Public
+	#tag Constant, Name = VERSION_MINOR, Type = Double, Dynamic = False, Default = \"1", Scope = Public
 	#tag EndConstant
 
 

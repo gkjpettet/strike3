@@ -16,6 +16,11 @@ Protected Module Rainbow
 		Protected Function Formatted(phrase as String, bold as Boolean=False, underline as Boolean=False, foreColor as Rainbow.Colour=Colour.default, backColor as Rainbow.Colour=Colour.default) As String
 		  ' chrb(27) is ESC
 		  
+		  ' Console text colours aren't supported in the Windows Command Prompt.
+		  #if TargetWindows
+		    return phrase
+		  #endif
+		  
 		  dim fc, bc, b, u as String
 		  
 		  select case foreColor

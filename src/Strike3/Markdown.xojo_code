@@ -7,11 +7,13 @@ Protected Module Markdown
 		  if initialised then return
 		  
 		  myShell = new Shell
+		  myShell.TimeOut = 10000
 		  
 		  try
 		    #if TargetMacOS
-		      'pandoc = Xojo.IO.SpecialFolder.GetResource("pandoc").ToClassic
 		      pandoc = App.ExecutableFile.Parent.Child("pandoc")
+		    #elseif TargetWindows
+		      pandoc = App.ExecutableFile.Parent.Child("pandoc.exe")
 		    #endif
 		  catch
 		    raise new Error(CurrentMethodName, "Unable to get a reference to the pandoc binary.")
@@ -24,6 +26,8 @@ Protected Module Markdown
 	#tag Method, Flags = &h1
 		Protected Function Render(md as String) As String
 		  ' Converts the passed Markdown to HTML using the bundled pandoc binary.
+		  
+		  const QUOTE as String = """"
 		  
 		  dim name as String
 		  dim tempFile as FolderItem
@@ -43,7 +47,8 @@ Protected Module Markdown
 		  end try
 		  
 		  ' Use pandoc to transform the contents of our temporary file to HTML
-		  myShell.Execute(pandoc.ShellPath + " " + tempFile.ShellPath + " " + OPTIONS)
+		  dim command as String = pandoc.ShellPath + " " + QUOTE + tempFile.ShellPath + QUOTE + " " + OPTIONS
+		  myShell.Execute(command)
 		  
 		  ' Delete the temporary file
 		  tempFile.Delete()

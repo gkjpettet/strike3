@@ -22,7 +22,7 @@ Protected Class ScriptContext
 		  ' CopyFromRootToPublic("misc")
 		  
 		  dim fromParts() as Text
-		  dim source as Xojo.IO.FolderItem = Strike3.root.ToModern
+		  dim source as FolderItem = Strike3.root
 		  
 		  ' Remove any leading and trailing slashes.
 		  if from.Left(1) = "/" or from.Left(1) = "\" then from = from.Right(from.Len - 1)
@@ -47,9 +47,9 @@ Protected Class ScriptContext
 		  
 		  ' Attempt the copy.
 		  try
-		    source.CopyTo(Strike3.publicFolder.ToModern)
+		    source.CopyTo(Strike3.publicFolder)
 		  catch
-		    raise new Error(CurrentMethodName, "Unable to copy source (" + source.Path + ") to the public folder.")
+		    raise new Error(CurrentMethodName, "Unable to copy source (" + source.NativePath + ") to the public folder.")
 		  end try
 		End Sub
 	#tag EndMethod
@@ -74,7 +74,7 @@ Protected Class ScriptContext
 		  ' CopyFromThemeToPublic("misc")
 		  
 		  dim fromParts() as Text
-		  dim source as Xojo.IO.FolderItem = Strike3.theme.ToModern
+		  dim source as FolderItem = Strike3.theme
 		  
 		  ' Remove any leading and trailing slashes.
 		  if from.Left(1) = "/" or from.Left(1) = "\" then from = from.Right(from.Len - 1)
@@ -99,9 +99,9 @@ Protected Class ScriptContext
 		  
 		  ' Attempt the copy.
 		  try
-		    source.CopyTo(Strike3.publicFolder.ToModern)
+		    source.CopyTo(Strike3.publicFolder)
 		  catch
-		    raise new Error(CurrentMethodName, "Unable to copy source (" + source.Path + ") to the public folder.")
+		    raise new Error(CurrentMethodName, "Unable to copy source (" + source.NativePath + ") to the public folder.")
 		  end try
 		End Sub
 	#tag EndMethod

@@ -48,5 +48,7 @@ Inherits ConsoleApplication
 	#tag EndEvent
 
 
+	#tag ViewBehavior
+	#tag EndViewBehavior
 End Class
 #tag EndClass
