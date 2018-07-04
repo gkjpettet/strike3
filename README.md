@@ -152,8 +152,14 @@ archives:                   true
 baseURL:                    "/"
 # Hostname (and path) to the root, e.g. https://strike3.xyz
 
+buildDrafts:             false
+# Whether posts with “drafts”: true in their frontmatter should be built when building the site
+
 description:                "My great website"
 # A description of the site. Used in some themes as a tagline
+
+longPost:             false
+# If `true` then the contents of this post will be shortened on list pages to a summary
 
 postsPerPage:               10
 # The number of posts to show on listing pages
@@ -166,9 +172,6 @@ theme:                      "primary"
 
 title:                      "My Website"
 # Site title
-
-buildDrafts:             false
-# Whether posts with “drafts”: true in their frontmatter should be built when building the site
 ```
 In addition to the values above, you are free to add any other valid JSON key/value and this will be accessible by all template files in the active theme. For instance, you may want to set details about the site author:
 
@@ -441,7 +444,7 @@ You don't have to specify both a `post.html` and a `list.html` file for each sec
 Disco is Strike3's templating language. In essence, it’s normal HTML with a limited number of **tags** that will be transformed by Strike3 during rendering into the required value.
 
 ### Basic syntax
-As mentioned above, Disco template files are normal HTML files with the `.html` file extension but with the addition of variables and functions known as **tags**. Tags are called within double curly braces: `{{tag-name}}`
+As mentioned above, Disco template files are normal HTML files with the `.html` file extension but with the addition of variables and functions known as **tags**. Tags are enclosed within double curly braces: `{{tag-name}}`
 
 ### Template variables
 Each template file has a `context` object made available to it. Strike3 passes either a `post context` or a `list context` to a template file, depending on the type of content being rendered. More detail is available in the [variables](#variables) section.
@@ -478,7 +481,7 @@ We can include it in our `post.html` template file like this:
 ```
 
 ### Iteration
-Disco is deliberately logic-less. The only non-variable tag is the `{{foreach}} {{endeach}}` block. Tags and HTML enclosed within this block are run for each post in the current `context`. For example, if we assume that the current context has three pages then the following code:
+Disco is deliberately logic-less. The only exception is the `{{foreach}} {{endeach}}` block. Tags and HTML enclosed within this block are run for each post in the current `context`. For example, if we assume that the current context has three pages then the following code:
 
 ```html
 {{foreach}}
@@ -627,7 +630,7 @@ It is worth noting that the value returned to the template of `{{content}}` can 
 - `{{helper.year}}`: The year component of the content’s date (four digits)
 
 ### Strike3 variables
-- `{{strike3.generator}}`: Meta tag for the version of Strike3 that built the site. I’d be very grateful if you would include it in all theme headers so I can track the usage and popularity of Strike3 as a tool. Example output: `<meta name="generator" content="Strike3 0.5.0" />`
+- `{{strike3.generator}}`: Meta tag for the version of Strike3 that built the site. I’d be very grateful if you would include it in all theme headers so I can track the usage and popularity of Strike3 as a tool. Example output: `<meta name="generator" content="Strike3 1.1.0" />`
 - `{{strike3.version}}`: Strike3's version number
 
 ## <a id="single-templates">Single templates</a>
@@ -757,7 +760,7 @@ Themes have easy access to a post's tags with the `{{tags}}` variable. Calling `
 The posts tagged with a particular tag can be found at `public/tag/tag-name/index.html`. So in the above example would could view all posts tagged "sci-fi" by visiting `public/tag/sci-fi/index.html`.
 
 ## <a id="archives">Archives</a>
-Strike3 will automatically add archives for your content. To disable this functionality you must set the `archives` variable in `config.json` to `false`.
+Strike3 will automatically add archives for your content. To disable this functionality just set the `archives` variable in `config.json` to `false`.
 
 When archives are enabled, Strike3 will create a top-level section in the built site at `archive/`. A page will be created at the root of this section (`archive/index.html`) for you to style how you wish with the `layouts/archive.html` template file.
 
@@ -854,7 +857,7 @@ Strike3 can optionally generate a RSS feed for your site if the `rss` variable i
 
 The feed will be saved to `public/rss.xml`. You can access the link to it from within a template file with the `{{feedURL}}` tag.
 
-It’s worth noting that feed XML files can grow quite large. If you don’t want to provide a feed for your site then make sure you set the `rss` variable to `false` to increase build speed and reduce the size of the site to upload. It's `false` by default.
+It’s worth noting that feed XML files can grow quite large. If you don’t want to provide a feed for your site then make sure you set the `rss` variable to `false` to reduce build times and reduce the size of the site to upload. It's `false` by default.
 
 ## <a id=“scripting”>Scripting</a>
 *TODO*
