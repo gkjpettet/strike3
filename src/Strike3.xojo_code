@@ -3157,7 +3157,7 @@ Protected Module Strike3
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
 	#tag EndConstant
 
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"0", Scope = Public
+	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"1", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"1", Scope = Public

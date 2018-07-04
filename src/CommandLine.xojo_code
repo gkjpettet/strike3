@@ -110,7 +110,11 @@ Protected Module CommandLine
 		    Strike3.Build(site)
 		    endTime = Microseconds - startTime
 		    t = endTime/1000
-		    Print Colourise("Success ✔︎", Colour.green)
+		    #if TargetWindows
+		      Print Colourise("Success.︎", Colour.green) ' The tick doesn't display in the Windows Command Prompt.
+		    #else
+		      Print Colourise("Success ✔︎", Colour.green)
+		    #endif
 		    Print("Site built in " + Str(t) + " ms")
 		    Quit(0)
 		  catch e as Strike3.Error
@@ -156,7 +160,11 @@ Protected Module CommandLine
 		  try
 		    site = Strike3.CreateSite(siteName, cwd, True)
 		    
-		    Print Colourise("Success ✔︎", Colour.green)
+		    #if TargetWindows
+		      Print Colourise("Success.︎", Colour.green) ' The tick doesn't display in the Windows Command Prompt.
+		    #else
+		      Print Colourise("Success ✔︎", Colour.green)
+		    #endif
 		    Print "Your new site was created at " + Strike3.root.NativePath
 		    Print "A single post and a simple page have been created in " + Colourise("/content", Colour.magenta) + _
 		    ". A simple default theme called "
@@ -186,7 +194,11 @@ Protected Module CommandLine
 		  
 		  try
 		    Strike3.CreateTheme(themeName)
-		    Print Colourise("Success ✔︎", Colour.green)
+		    #if TargetWindows
+		      Print Colourise("Success.︎", Colour.green) ' The tick doesn't display in the Windows Command Prompt.
+		    #else
+		      Print Colourise("Success ✔︎", Colour.green)
+		    #endif
 		    Print "Your new theme " + Colourise(themeName, Colour.magenta) + " was created at " + _
 		    Strike3.root.Child("themes").NativePath
 		    Quit(0)

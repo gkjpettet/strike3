@@ -25,13 +25,17 @@ This is the comprehensive guide to my static site generator.
 20. [Navigation](#navigation)
 21. [Pagination](#pagination)
 22. [RSS](#rss)
+23. [Scripting](#scripting)
 
 ## <a id="intro">Introduction</a>
 Strike3 is a static site generator. Put simply, Strike3 takes a folder of Markdown files and a theme (a collection of HTML files) and uses those to create a completely self-contained website.
 Strike3 is the name of the engine and `strike3` is the name of the command line tool. It's written in [Xojo][xojo].
 
 ## <a id="installation">Installation</a>
-Although Xojo is cross-platform, currently only macOS is supported. I am working on Windows and Linux support at the moment. On macOS, you can use the excellent [Homebrew][homebrew] package manager to quickly install Strike3:
+Although Xojo is cross-platform, currently only macOS and Windows (64-bit) are supported. Linux support is planned with installation to be handled by a Snap. 
+
+**macOS**
+On macOS, you can use the excellent [Homebrew][homebrew] package manager to quickly install Strike3:
 ```
 brew tap gkjpettet/homebrew-strike3
 brew install strike3
@@ -46,6 +50,13 @@ gkjpettet/strike3/strike3 ✔
 
 Then you'll know there's a new version available. To install it simply type `brew upgrade` in the Terminal. 
 
+**Windows**
+The easiest way to install Strike3 on Windows is with the [Scoop][scoop] package manager.
+```
+scoop bucket add strike3 https://github.com/gkjpettet/scoop-strike3
+scoop install strike3
+```
+
 ## <a id="quickstart">Quickstart</a>
 This quick tutorial will get you up and started with a simple blog in no time. Our blog will list posts on the home page and contain just a single page. I'll assume you've already installed `strike3` as described above.
 
@@ -58,7 +69,7 @@ If everything is well, you should see something like the following:
 
 ```
 Success ✓
-Your new site was created in /Users/xxx/Desktop/testing
+Your new site was created in /Users/garry/Desktop
 A single post and a simple page have been created in /content. 
 A simple default theme called 'primary' has been created for you in /themes.
 Feel free to create your own with strike3 create theme [name].
@@ -66,18 +77,21 @@ Feel free to create your own with strike3 create theme [name].
 
 You can check out the contents of your new site with `ls`:
 
-`config.json   content   site.data   storage   themes`
+`config.json   content   site.data   scripts   storage   themes`
 
-As you can see, a Strike3 site has a very simple basic structure: three folders, a configuration file and a SQLite database. Let’s look at them one-by-one:
+As you can see, a Strike3 site has a very simple basic structure: four folders, a configuration file and a SQLite database. Let’s look at them one-by-one:
 
 ##### config.json
-Every website must have a configuration file at its root in JSON format. The settings within config.json apply to the whole site. Required and valid options are detailed in the [configuration](#config) section. Additionally, you can provide site-wide data that's accessible from themes in this file.
+Every website must have a configuration file at its root in JSON format. The settings within `config.json` apply to the whole site. Required and valid options are detailed in the [configuration](#config) section. Additionally, you can provide site-wide data that's accessible from themes in this file.
 
 ##### content
-As the name suggests, this is where you store the content of your website. Inside content you create folders for different sections. Let’s suppose our blog has three types of content: posts, reviews and tutorials. You would then create three folders in content titled `post`, `review` and `tutorial` (note I’ve used the singular form of the word as it looks better in the resultant URLs). The name of the section is important as it affects not only the final URL but also the styling applied to the page by the theme (as themes can style sections differently from one another if you wish). A simple blog doesn’t require any sections, you can just place Markdown files in the root of the content folder too if you wish.
+As the name suggests, this is where you store the content of your website. Inside `content` you create folders for different sections. Let’s suppose our blog has three types of content: posts, reviews and tutorials. You would then create three folders in content titled `post`, `review` and `tutorial` (note I’ve used the singular form of the word as it looks better in the resultant URLs). The name of the section is important as it affects not only the final URL but also the styling applied to the page by the theme (as themes can style sections differently from one another if you wish). A simple blog doesn’t require any sections, you can just place Markdown files in the root of the content folder too if you wish.
+
+#####  scripts
+After Strike3 builds your site, it will run any scripts files you place in this folder. The scripts must be written in Xojoscript and have the file extension `.xojoscript`. You can read more about this functionality in the [scripting](#scripting) section. 
 
 ##### site.data
-This is a SQLite database which is used to cache your content for faster rendering. You shouldn't really ever need to edit this.
+This is a SQLite database which is used to cache your content for faster building. You shouldn't really ever need to edit this.
 
 ##### storage
 Any file or folder you place in here will be copied to `/public/storage` in the built site. This is a good location to put images, etc.
@@ -86,7 +100,7 @@ Any file or folder you place in here will be copied to `/public/storage` in the 
 This is the folder to place themes you have created or downloaded. They are then applied by specifying their name in `config.json` (read more about themes [here](#themes)).
 
 ### Step 2: Add content
-Helpfully, when creating a new site, Strike3 also creates some dummy content for us. Strike3 creates a post called `Hello World.md` in `/content` and a simple about page in `/content/about`. You can keep and edit these or delete them and add your own content. Just use your favourite editor (I use [Atom][atom]).
+Helpfully, when creating a new site, Strike3 also creates some dummy content for us. Strike3 creates a post called `Hello World.md` in `/content` and a simple about page in `/content/about`. You can keep and edit these or delete them and add your own content. Just use your favourite editor (I use [Sublime Text][sublime]).
 
 If you open up the sample post created by Strike3 (`/content/Hello World.md`), you’ll see an example of (optional) frontmatter which looks like this:
 
@@ -99,43 +113,44 @@ If you open up the sample post created by Strike3 (`/content/Hello World.md`), y
 Note the flanking three semicolons in the [frontmatter](#frontmatter) which separate it from your post content.
 
 ### Step 3: Set the theme
-Every site needs a theme and Strike3 supports a comprehensive theming system. You can either create your own or download one made by our community. Helpfully, Strike3 provides a very simple theme to get you started called `primary`. Strike3 sets this as your site’s theme. Using a different theme is easy - just copy the theme folder to `/themes` in the site root and set the `theme` value in `config.json` to the theme name. You can read more about this [here](#themes).
+Every site needs a theme and Strike3 supports a comprehensive theming system. You can either create your own or download one made by our community. Helpfully, Strike3 provides a very simple theme to get you started called `primary`. Strike3 sets this as your site’s theme. Using a different theme is easy - just copy the theme folder you want to use  to `/themes` in the site root and set the `theme` value in `config.json` to the theme name. You can read more about this [here](#themes).
 
 ### Step 4: Build the site
 Building your site is quick and easy. Just navigate to the root of your site in Terminal and type: `strike3 build`:
 
 ```
 Success ✓
-Site built in 88 ms
+Site built in 200 ms
 ```
 
 ### Step 5: Upload your site
-Simply copy the contents of the `/public` folder created by the build command to the root of your web host and your site is live.
+To publish your site just copy the entire contents of the `/public` folder created by the build command to the root of your web host.
 
 ## <a id="config">Configuration</a>
-Strike3 requires the presence of a configuration file in the root of the site directory named `config.json`. Not only does this contain a number of mandatory values needed by Strike3 to build your site but it can specify additional options and arbitrary data for your themes to use.
+Strike3 requires the presence of a configuration file in the root of the site directory named `config.json`. Not only does this contain a number of mandatory values needed by Strike3 to build your site but it can specify additional options and contain arbitrary data for your themes to use.
 
 Below is the configuration file created by Strike3 when you run the `strike3 create site` command:
 
 ```
 {
   "title":"my-blog",
-  "theme":"",
+  "theme": "primary",
   "archives":false,
   "rss":true,
   "baseURL":"\/",
   "description":"My great website",
-  "postsPerPage":10
+  "postsPerPage":10,
+  “BuildDrafts”: false
 }
 ```
-Omitting any of the values above will cause Strike3 to use it’s defaults. A list of all values controlling site creation recognised by Aoife are listed below:
+Omitting any of the values above will cause Strike3 to use it’s defaults. A list of all values controlling site creation recognised by Strike3 are listed below:
 
 ```
 archives:                   true
 # Whether or not build archive listings (set to true if active theme demands it)
 
 baseURL:                    "/"
-# Hostname (and path) to the root, e.g. http://aoife.io
+# Hostname (and path) to the root, e.g. https://strike3.xyz
 
 description:                "My great website"
 # A description of the site. Used in some themes as a tagline
@@ -151,8 +166,11 @@ theme:                      "primary"
 
 title:                      "My Website"
 # Site title
+
+buildDrafts:             false
+# Whether posts with “drafts”: true in their frontmatter should be built when building the site
 ```
-I addition to the values above, you are free to add any other valid JSON key/value and this will be accessible by all template files in the active theme. For instance, you may want to set details about the site author:
+In addition to the values above, you are free to add any other valid JSON key/value and this will be accessible by all template files in the active theme. For instance, you may want to set details about the site author:
 
 `"author": "Garry Pettet"`
 
@@ -200,13 +218,16 @@ Variables can be accessed from within a theme template file simply by enclosing 
 
 #### Reserved variables
 ##### date
-The publication date for the content. Should be in SQL date format. Valid examples include: `2016-12-06 10:40`, `2016-12-06` and `2016-12-06 10:40:35`. If not specified then MAebh will use the modification date of the file. If the publication date is in the future then the content will not be rendered.
+The publication date for the content. Should be in SQL date format. Valid examples include: `2016-12-06 10:40`, `2016-12-06` and `2016-12-06 10:40:35`. If not specified then Strike3 will use the modification date of the file. If the publication date is in the future then the content will not be rendered.
+
+##### draft
+If `true` then this post will not be rendered _unless_ the `buildDrafts` value in the site’s `config.json` file is set to `true`.
+
+##### slug
+A post’s slug is automatically created by Strike3 but can be overridden/customised with this variable if desired. 
 
 ##### title
 The title for the content. If not specified in the frontmatter then Strike3 will slugify the file name.
-
-##### draft
-If `true` then this post will not be rendered _unless_ then `buildDrafts` value in the site's `config.json` file is set to `true`.
 
 ## <a id="sections">Sections</a>
 As discussed in the [content organisation](#content-organisation) section, how you organise your content in your file system is mirrored in the final built site. With this in mind, Strike3 uses the top level folders within the `/content` folder as the **section**.
@@ -237,7 +258,7 @@ For more information on how to style these automatically generated lists from a 
 ## <a id="slugs">Slugs</a>
 Just so we’re all clear, let’s look at an illustration of the terms used to describe both a content path (i.e. a file path within your `/content` folder) and a URL. The following file path:
 
-`content/review/**Die Hard.md`
+`content/review/Die Hard.md`
 
 will generate this URL:
 
@@ -245,7 +266,7 @@ will generate this URL:
 
 Where **example.com** is the `baseURL` value in `config.json`, **review** is the **section** (a folder titled `review` in the `content` folder) and **die-hard** is the **slug**. 
 
-The slug is created automatically by Strike3 from the file name by removing/substituting illegal URL characters. You can specify your own slug for a post by adding it to the post's [frontmatter](#frontmatter) like so:
+The slug is created automatically by Strike3 from the file name by removing/substituting illegal URL characters. You can specify your own slug for a post by adding it to the post's [frontmatter](#frontmatter) as described above and as demonstrated below:
 
 ```
 "slug": "my-great-slug"
@@ -260,21 +281,21 @@ They say a picture is worth a thousand words. To that effect, below is a basic e
 "date": "2016-12-06 16:39"
 ;;;
 
-## Intro ##
+## Intro
 New York cop _John McClane_ is visiting his estranged wife Holly in LA for
 Christmas. Arriving in time for her Christmas party at the Nakatomi Plaza
 skyscraper, he is unfortunately also just in time to see terrorists take
 everyone there hostage. As the only cop inside the building, McClane does 
 his best to sort the situation out.
 
-## About ##
+## About
 The smart-mouthed, high-rise thriller which launched [Bruce Willis][hero] as 
 an action figure and accidentally rekindled Hollywoods enthusiasm for 
 disaster movies (a worthy 80s cousin to The Towering Inferno). Die Hard has 
 proved a reliable video fixture for the home and looks great on DVD; just 
 dying to be racked alongside its two successors.
 
-## Verdict ##
+## Verdict
 John McClane's smartmouthed New York cop was a career-defining turn, mixing 
 banter, action heroics and a dirty white vest to stunning effect. Acting up 
 to him every step of the way is [Alan Rickman][rickman], at his sneering 
@@ -311,9 +332,9 @@ movie, and if it’s not the greatest action movie ever made, then it’s damn c
 ```
 
 ## <a id="themes-overview">Themes overview</a>
-Strike3 has a powerful but very simple theming system which is capable of styling both basic and complicated sites. As an example, [my personal website](http://garrypettet.com) is built with Strike3 using a theme I built in an afternoon.
+Strike3 has a powerful but simple theming system which is capable of styling both basic and complicated sites. As an example, [my personal website](https://garrypettet.com) is built with Strike3 using a theme I built in an afternoon.
 
-Strike3 themes are powered by Strike3's **Disco engine** and are therefore termed **Disco themes**. Disco themes are deliberately logic-less as their purpose is purely for the display of content, its Strike3's job as the rendering engine to handle logic. This means anybody with a basic knowledge of HTML and CSS can create a beautiful theme. Disco themes are structured in a way to reduce code duplication and are ridiculously easy to install and modify.
+Strike3 themes are powered by Strike3's **Disco engine** and are therefore termed **Disco themes**. Disco themes are deliberately logic-less as their purpose is purely for the display of content, it's Strike3's job as the rendering engine to handle logic. This means anybody with a basic knowledge of HTML and CSS can create a beautiful theme. Disco themes are structured in a way to reduce code duplication and are ridiculously easy to install and modify.
 
 Strike3 currently ships with a simple default theme called `primary` to get you started.
 
@@ -343,9 +364,9 @@ layouts/
  - archive.html
  - archives.html
  - home.html
+ - list.html
  - page.html
  - post.html
- - list.html
  - tags.html
  -- partials/
 theme.json
@@ -377,7 +398,7 @@ This is the meat of the theme. The `layouts/` folder contains the various templa
 - `archive.html`: Controls how the `/archive/index.html` page is rendered
 - `archives.html`: Specifies how individual archive year and archive month pages are rendered
 - `home.html`: If a static home page is required, this controls how it’s rendered
-- `list.html` How to display the default list of content
+- `list.html`: How to display the default list of content
 - `page.html`: Default rendering for a page
 - `post.html`: Default rendering for a single post
 
@@ -727,8 +748,8 @@ Themes have easy access to a post's tags with the `{{tags}}` variable. Calling `
 
 ```html
 <ul class="tags">
-	<li><a href="/tag/review">review</a></li>
-	<li><a href="/tag/sci-fi">sci-fi</a></li>
+  <li><a href="/tag/review">review</a></li>
+  <li><a href="/tag/sci-fi">sci-fi</a></li>
 </ul>
 ```
 
@@ -835,11 +856,15 @@ The feed will be saved to `public/rss.xml`. You can access the link to it from w
 
 It’s worth noting that feed XML files can grow quite large. If you don’t want to provide a feed for your site then make sure you set the `rss` variable to `false` to increase build speed and reduce the size of the site to upload. It's `false` by default.
 
+## <a id=“scripting”>Scripting</a>
+*TODO*
+
 [die hard review]: http://www.empireonline.com/movies/die-hard/review/
 [xojo]: https://xojo.com
 [cmark]: https://github.com/commonmark/cmark
 [md5]: https://www.fourmilab.ch/md5/
 [mac-release]: http://example.com
 [win-release]: http://example.com
-[atom]: https://atom.io
+[sublime]: https://sublimetext.com
 [homebrew]: https://brew.sh
+[scoop]: https://scoop.sh
