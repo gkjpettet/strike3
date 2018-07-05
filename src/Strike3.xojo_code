@@ -3025,7 +3025,7 @@ Protected Module Strike3
 		Protected Function Version() As String
 		  ' Returns the current version of Strike3 as a String.
 		  
-		  return Str(VERSION_MAJOR) + "." + Str(VERSION_MINOR) + "." + Str(VERSION_BUG)
+		  return Str(App.MajorVersion) + "." + Str(App.MinorVersion) + "." + Str(App.BugVersion)
 		End Function
 	#tag EndMethod
 
@@ -3155,15 +3155,6 @@ Protected Module Strike3
 	#tag EndConstant
 
 	#tag Constant, Name = REGEX_STRIP_HTML, Type = String, Dynamic = False, Default = \"<(\?:[^>\x3D]|\x3D\'[^\']*\'|\x3D\"[^\"]*\"|\x3D[^\'\"][^\\s>]*)*>", Scope = Private
-	#tag EndConstant
-
-	#tag Constant, Name = VERSION_BUG, Type = Double, Dynamic = False, Default = \"1", Scope = Public
-	#tag EndConstant
-
-	#tag Constant, Name = VERSION_MAJOR, Type = Double, Dynamic = False, Default = \"1", Scope = Public
-	#tag EndConstant
-
-	#tag Constant, Name = VERSION_MINOR, Type = Double, Dynamic = False, Default = \"1", Scope = Public
 	#tag EndConstant
 
 
