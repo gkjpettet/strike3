@@ -82,7 +82,7 @@ Protected Module Markdown
 	#tag EndProperty
 
 
-	#tag Constant, Name = OPTIONS, Type = String, Dynamic = False, Default = \"-f markdown", Scope = Private
+	#tag Constant, Name = OPTIONS, Type = String, Dynamic = False, Default = \"-f markdown --no-highlight", Scope = Private
 	#tag EndConstant
 
 
