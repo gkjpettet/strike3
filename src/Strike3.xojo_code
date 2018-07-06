@@ -1714,7 +1714,7 @@ Protected Module Strike3
 		  
 		  ' Find the template tags within `result`.
 		  rg = new RegEx
-		  rg.SearchPattern = "{{\s?([^}]*)\s?}}"
+		  rg.SearchPattern = "(?<!`){{\s?([^}]*)\s?}}(?!`)"
 		  
 		  ' Analyse each one and replace.
 		  do
@@ -1757,7 +1757,7 @@ Protected Module Strike3
 		  
 		  ' Find the template tags within `result`.
 		  rg = new RegEx
-		  rg.SearchPattern = "{{\s?([^}]*)\s?}}"
+		  rg.SearchPattern = "(?<!`){{\s?([^}]*)\s?}}(?!`)"
 		  
 		  ' Analyse each one and replace.
 		  do
@@ -2032,13 +2032,13 @@ Protected Module Strike3
 		      
 		      ' Now look for tags in this loop
 		      rgLoop = new RegEx
-		      rgLoop.SearchPattern = "{{\s?([^}]*)\s?}}"
+		      rgLoop.SearchPattern = "(?<!`){{\s?([^}]*)\s?}}(?!`)"
 		      
 		      ' For each post, we need to resolve the loopContents
 		      for each post in posts
 		        
 		        rgLoop = new RegEx
-		        rgLoop.SearchPattern = "{{\s?([^}]*)\s?}}"
+		        rgLoop.SearchPattern = "(?<!`){{\s?([^}]*)\s?}}(?!`)"
 		        
 		        pageLoop = loopContents
 		        
@@ -2075,7 +2075,7 @@ Protected Module Strike3
 		  
 		  ' Now resolve any other tags outside of a loop.
 		  rg = new RegEx
-		  rg.SearchPattern = "{{\s?([^}]*)\s?}}"
+		  rg.SearchPattern = "(?<!`){{\s?([^}]*)\s?}}(?!`)"
 		  
 		  ' Analyse each one and replace.
 		  do
@@ -2118,7 +2118,7 @@ Protected Module Strike3
 		  
 		  ' Find the template tags within `result`.
 		  rg = new RegEx
-		  rg.SearchPattern = "{{\s?([^}]*)\s?}}"
+		  rg.SearchPattern = "(?<!`){{\s?([^}]*)\s?}}(?!`)"
 		  
 		  ' Analyse each one and replace.
 		  do
@@ -2160,7 +2160,7 @@ Protected Module Strike3
 		  
 		  ' Find the template tags within `result`.
 		  rg = new RegEx
-		  rg.SearchPattern = "{{\s?([^}]*)\s?}}"
+		  rg.SearchPattern = "(?<!`){{\s?([^}]*)\s?}}(?!`)"
 		  
 		  ' Analyse each one and replace.
 		  do
@@ -2374,6 +2374,7 @@ Protected Module Strike3
 		  if tag = "archives.longMonths" then return archiveLongMonthsHTML
 		  if tag = "archives.url" then return publicFolder.Child("archive.html").ToPermalink
 		  
+		  ' Unknown tag
 		  raise new Error(CurrentMethodName, "Unknown post tag `{{" + tag + "}}`.")
 		  
 		End Function
