@@ -52,7 +52,7 @@
 					dim result as String
 					
 					result = DoShellCommand("/usr/local/bin/publisher -n " + name + " -m " + major + " -x " + minor + " -b " + bug + _
-					" -p win" + " -s " + source + " -d " + destination + " --colour-off")
+					" -p win64" + " -s " + source + " -d " + destination + " --colour-off")
 					
 					Print(result)
 				End
