@@ -5,14 +5,14 @@ Inherits ConsoleApplication
 		Function Run(args() as String) As Integer
 		  using CommandLine
 		  
-		  ' #if DebugBuild and TargetMacOS
-		  ' try
-		  ' Strike3.Build(SpecialFolder.UserHome.Child("Repos").Child("garrypettet.com").Child("src"))
-		  ' return 0
-		  ' catch
-		  ' return -1
-		  ' end try
-		  ' #endif
+		  #if DebugBuild and TargetMacOS
+		    try
+		      Strike3.Build(SpecialFolder.UserHome.Child("Repos").Child("strike3.xyz").Child("src"))
+		      return 0
+		    catch
+		      return -1
+		    end try
+		  #endif
 		  
 		  ' Remove the executable path (always passed as the first argument).
 		  args.Remove(0)
