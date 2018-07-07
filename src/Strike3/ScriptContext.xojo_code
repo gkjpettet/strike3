@@ -43,7 +43,6 @@ Protected Class ScriptContext
 		    end try
 		  next part
 		  if source = Nil or not source.Exists then raise new Error(CurrentMethodName, "Invalid source path.")
-		  if source = Nil or not source.Exists then raise new Error(CurrentMethodName, "Invalid source path.")
 		  
 		  ' Attempt the copy.
 		  try
@@ -95,13 +94,85 @@ Protected Class ScriptContext
 		    end try
 		  next part
 		  if source = Nil or not source.Exists then raise new Error(CurrentMethodName, "Invalid source path.")
-		  if source = Nil or not source.Exists then raise new Error(CurrentMethodName, "Invalid source path.")
 		  
 		  ' Attempt the copy.
 		  try
 		    source.CopyTo(Strike3.publicFolder)
 		  catch
 		    raise new Error(CurrentMethodName, "Unable to copy source (" + source.NativePath + ") to the public folder.")
+		  end try
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function GetFileContents(filePath as String) As String
+		  ' Returns the contents of the file at the path specified.
+		  ' Returns "" if either empty or an error occurs.
+		  
+		  dim parts() as Text
+		  dim file as FolderItem = Strike3.root
+		  
+		  ' Remove any leading and trailing slashes.
+		  if filePath.Left(1) = "/" or filePath.Left(1) = "\" then filePath = filePath.Right(filePath.Len - 1)
+		  if filePath.Right(1) = "/" or filePath.Right(1) = "\" then filePath = filePath.Left(filePath.Len - 1)
+		  
+		  ' Split `filePath` into its children.
+		  #if TargetWindows
+		    parts = filePath.ToText.Split("\")
+		  #else
+		    parts = filePath.ToText.Split("/")
+		  #endif
+		  
+		  for each part as Text in parts
+		    try
+		      file = file.Child(part)
+		    catch
+		      raise new Error(CurrentMethodName, "Invalid file path.")
+		    end try
+		  next part
+		  if file = Nil or not file.Exists then raise new Error(CurrentMethodName, "Invalid file path.")
+		  
+		  return Strike3.FileContents(file)
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub WriteToFile(what as String, filePath as String)
+		  ' Writes `what` to the specified file path.
+		  
+		  dim parts() as Text
+		  dim file as FolderItem = Strike3.root
+		  dim tout as TextOutputStream
+		  
+		  ' Remove any leading and trailing slashes.
+		  if filePath.Left(1) = "/" or filePath.Left(1) = "\" then filePath = filePath.Right(filePath.Len - 1)
+		  if filePath.Right(1) = "/" or filePath.Right(1) = "\" then filePath = filePath.Left(filePath.Len - 1)
+		  
+		  ' Split `filePath` into its children.
+		  #if TargetWindows
+		    parts = filePath.ToText.Split("\")
+		  #else
+		    parts = filePath.ToText.Split("/")
+		  #endif
+		  
+		  ' Attempt to get a reference to the file to write to.
+		  for each part as Text in parts
+		    try
+		      file = file.Child(part)
+		    catch
+		      raise new Error(CurrentMethodName, "Invalid file path.")
+		    end try
+		  next part
+		  if file = Nil then raise new Error(CurrentMethodName, "Invalid file path.")
+		  if file.Directory then raise new Error(CurrentMethodName, "Cannot write to a folder.")
+		  
+		  ' Write to the specified file.
+		  try
+		    tout = TextOutputStream.Create(file)
+		    tout.Write(what)
+		    tout.Close()
+		  catch
+		    raise new Error(CurrentMethodName, "Unable to write specified contents to file.")
 		  end try
 		End Sub
 	#tag EndMethod

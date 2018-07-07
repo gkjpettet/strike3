@@ -8,6 +8,7 @@ Inherits ConsoleApplication
 		  #if DebugBuild and TargetMacOS
 		    try
 		      Strike3.Build(SpecialFolder.UserHome.Child("Repos").Child("strike3.xyz").Child("src"))
+		      'Strike3.Build(SpecialFolder.UserHome.Child("Repos").Child("garrypettet.com").Child("src"))
 		      return 0
 		    catch
 		      return -1

@@ -996,8 +996,8 @@ Protected Module Strike3
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
-		Private Function FileContents(file as FolderItem) As String
+	#tag Method, Flags = &h1
+		Protected Function FileContents(file as FolderItem) As String
 		  ' Gets the string contents of the passed file.
 		  ' We will standardise line endings to EndOfLine.UNIX
 		  
@@ -2634,7 +2634,7 @@ Protected Module Strike3
 		    script = new StrikeScript(scriptFiles(i), context)
 		    try
 		      script.Run()
-		    catch
+		    catch err as Strike3.Error
 		      raise new Error(CurrentMethodName, _
 		      "An error occurred in the `" + scriptFiles(i).NativePath + "` script.")
 		    end try
