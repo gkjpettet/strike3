@@ -1,3 +1,6 @@
+# Strike3
+This is the comprehensive guide to my static site generator.
+
 - [Introduction](#intro)
 - [Installation](#installation)
 - [Quickstart](#quickstart)
